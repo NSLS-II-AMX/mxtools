@@ -1,4 +1,3 @@
-from ophyd import *
 from ophyd import Component as Cpt, Device, EpicsSignal, EpicsSignalRO
 
 class VectorProgramStart(Device):
