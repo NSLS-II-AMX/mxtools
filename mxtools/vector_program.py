@@ -1,5 +1,5 @@
 from ophyd import *
-from ophyd import Device, EpicsSignal, EpicsSignalRO
+from ophyd import Component as Cpt, Device, EpicsSignal, EpicsSignalRO
 
 class VectorProgramStart(Device):
     omega = Cpt(EpicsSignal, 'Pos:OStart-SP')
