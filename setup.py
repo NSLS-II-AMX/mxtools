@@ -41,7 +41,7 @@ setup(
     long_description=readme,
     author="Jun Aishima",
     author_email='jaishima@bnl.gov',
-    url='https://github.com/NSLS-II/mxtools',
+    url='https://github.com/NSLS-II-AMX/mxtools',
     python_requires='>={}'.format('.'.join(str(n) for n in min_version)),
     packages=find_packages(exclude=['docs', 'tests']),
     entry_points={
