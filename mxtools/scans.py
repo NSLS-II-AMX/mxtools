@@ -1,5 +1,7 @@
 #objects available should be zebra, vector, eiger
 import bluesky.plan_stubs as bps
+from fmx import zebra, vector_program
+
 
 def zebra_daq_prep():
        yield from bps.mv(zebra.reset, 1)
