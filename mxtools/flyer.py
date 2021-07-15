@@ -4,6 +4,7 @@ from ophyd.sim import NullStatus
 from ophyd.status import SubscriptionStatus
 from bluesky import plan_stubs as bps
 from bluesky import preprocessors as bpp
+from bluesky import plans as bp
 
 class MXFlyer:
     def __init__(self, vector, zebra, eiger=None) -> None:
@@ -92,8 +93,6 @@ def configure_nyx_flyer():
 @bpp.run_decorator(md={})
 def actual_scan(vector, zebra, angle_start,scanWidth,imgWidth,exposurePeriodPerImage):
     yield from configure_flyer(vector, zebra, angle_start,scanWidth,imgWidth,exposurePeriodPerImage, 'abc', 'abc', 1)
-    yield from bps.kickoff(mx_flyer, wait=True)
-    yield from bps.complete(mx_flyer, wait=True)
-    yield from bps.collect(mx_flyer)
+    yield from bp.fly([mx_flyer])
 
 mx_flyer = MXFlyer(vector=vector, zebra=zebra, eiger=eiger_single)
