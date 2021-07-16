@@ -7,8 +7,7 @@ from bluesky import preprocessors as bpp
 from ophyd.sim import NullStatus
 from ophyd.status import SubscriptionStatus
 
-from .scans import (setup_vector_program, setup_zebra_vector_scan,
-                    zebra_daq_prep)
+from .scans import setup_vector_program, setup_zebra_vector_scan, zebra_daq_prep
 
 
 class MXFlyer:
