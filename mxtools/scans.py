@@ -1,6 +1,6 @@
 #objects available should be zebra, vector, eiger
 import bluesky.plan_stubs as bps
-from fmx import zebra, vector
+from fmx import vector, zebra
 
 
 def zebra_daq_prep():

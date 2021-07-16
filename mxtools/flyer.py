@@ -1,10 +1,12 @@
 import time as ttime
 from collections import deque
+
+from bluesky import plan_stubs as bps
+from bluesky import plans as bp
+from bluesky import preprocessors as bpp
 from ophyd.sim import NullStatus
 from ophyd.status import SubscriptionStatus
-from bluesky import plan_stubs as bps
-from bluesky import preprocessors as bpp
-from bluesky import plans as bp
+
 
 class MXFlyer:
     def __init__(self, vector, zebra, eiger=None) -> None:
