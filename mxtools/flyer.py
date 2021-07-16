@@ -90,7 +90,6 @@ def configure_flyer(
         yield from bps.mv(vector.buffer_time, 3)
         pass
     detector_dead_time = 0.001  # TODO get real dead time from detector object
-    exposureTimePerImage = exposurePeriodPerImage - detector_dead_time
     yield from setup_vector_program(
         num_images=numImages,
         angle_start=angle_start,
@@ -137,4 +136,5 @@ def actual_scan(
     yield from bp.fly([mx_flyer])
 
 
-mx_flyer = MXFlyer(vector=vector, zebra=zebra, eiger=eiger_single)
+mx_flyer = MXFlyer(vector=vector, zebra=zebra, eiger=eiger_single)  # noqa: F821
+# vector, zebra, eiger_single are assumed to be in the namespace already
