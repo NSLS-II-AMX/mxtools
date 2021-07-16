@@ -1,13 +1,14 @@
 import getpass
 import grp
+import logging
 import os
+import time
 
 import bluesky.plan_stubs as bps
 
 from fmx import eiger, vector, zebra
-import time
-import grp
-import getpass
+
+logger = logging.getLogger(__name__)
 
 
 def zebra_daq_prep():
@@ -106,14 +107,28 @@ def setup_eiger_triggers(mode, num_triggers, exposure_per_image):
     yield from bps.mv(eiger.trigger_exposure, exposure_per_image)
 
 
-def setup_eiger_arming(start, width, num_images, exposure_per_image, file_prefix, data_directory_name, file_number_start, x_beam, y_beam, wavelength, det_distance_m):
+def setup_eiger_arming(
+    start,
+    width,
+    num_images,
+    exposure_per_image,
+    file_prefix,
+    data_directory_name,
+    file_number_start,
+    x_beam,
+    y_beam,
+    wavelength,
+    det_distance_m,
+):
     yield from bps.mv(eiger.save_files, 1)
     yield from bps.mv(eiger.file_owner, getpass.getuser())
     yield from bps.mv(eiger.file_owner_grp, grp.getgrgid(os.getgid())[0])
     yield from bps.mv(eiger.file_perms, 420)
-    file_prefix_minus_directory = str(fileprefix)
+    file_prefix_minus_directory = str(file_prefix)
     try:
-        file_prefix_minus_directory = file_prefix_minus_directory[file_prefix_minus_directory.rindex("/")+1:len(file_prefix_minus_directory)]
+        file_prefix_minus_directory = file_prefix_minus_directory[
+            file_prefix_minus_directory.rindex("/") + 1 : len(file_prefix_minus_directory)  # noqa: E203
+        ]
     except ValueError:
         pass
 
@@ -121,10 +136,10 @@ def setup_eiger_arming(start, width, num_images, exposure_per_image, file_prefix
     yield from bps.mv(eiger.acquire_period, exposure_per_image)
     yield from bps.mv(eiger.num_images, num_images)
     yield from bps.mv(eiger.file_path, data_directory_name)
-    yield from bps.mv(eiger.fw_name_pattern, f'{file_prefix_minus_directory}_$id')
+    yield from bps.mv(eiger.fw_name_pattern, f"{file_prefix_minus_directory}_$id")
     yield from bps.mv(eiger.sequence_id, file_number_start)
 
-    #originally from detector_set_fileheader
+    # originally from detector_set_fileheader
     yield from bps.mv(eiger.beam_center_x, x_beam)
     yield from bps.mv(eiger.beam_center_y, y_beam)
     yield from bps.mv(eiger.omega_incr, width)
@@ -134,7 +149,7 @@ def setup_eiger_arming(start, width, num_images, exposure_per_image, file_prefix
 
     start_arm = time.time()
     yield from bps.mv(eiger.acquire, 1)
-    logger.info(f'arm time = {time.time() - start_arm}')
+    logger.info(f"arm time = {time.time() - start_arm}")
 
 
 def setup_eiger_stop_acquire_and_wait():
