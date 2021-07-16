@@ -62,7 +62,9 @@ def setup_zebra_vector_scan_for_raster(
 ):
     yield from bps.mv(zebra.pc.encoder, scan_encoder)
     yield from bps.sleep(1.0)
-    yield from bps.mv(zebra.pc.direction, 0, zebra.pc.gate.sel, 0)  # 0 = positive
+    yield from bps.mv(
+        zebra.pc.direction, 0, zebra.pc.gate.sel, 0
+    )  # direction, 0 = positive
     yield from bps.mv(zebra.pc.gate.start, angle_start)
     if image_width != 0:
         yield from bps.mv(
