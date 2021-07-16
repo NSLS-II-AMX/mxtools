@@ -87,3 +87,33 @@ def setup_vector_program(num_images, angle_start, angle_end, exposure_period_per
         vector.hold,
         0,
     )
+
+
+def setup_eiger_exposure(exposure_time, exposure_period):
+    yield from bps.mv(eiger.acquire_time(exposure_time))
+    yield from bps.mv(eiger.acquire_period(exposure_period))
+
+def setup_eiger_triggers(mode, num_triggers, exposure_per_image):
+    yield from bps.mv(eiger.trigger_mode, mode)
+    yield from bps.mv(eiger.num_triggers, num_triggers)
+    yield from bps.mv(eiger.trigger_exposure, exposure_per_image)
+
+def setup_eiger_arming(start, width, num_images, exposure_per_image, file_prefix, data_directory_name, file_number_start):
+    yield from bps.mv(eiger.save_files, 1) #check det_lib and epics_det for what the function doesa
+    yield from bps.mv(eiger.file_owner, getpass.getuser())
+    yield from bps.mv(eiger.file_owner_grp, grp.getgrgid(os.getgid())[0])
+    yield from bps.mv(eiger.file_perms, 420)
+    yield from bps.mv(
+    #originally from header
+    yield from bps.mv(eiger.omega_start, start)
+    yield from bps.mv(eiger.omega_incr, width)
+    yield from bps.mv(eiger.num_images, num_images)
+    yield from bps.mv(eiger.acquire_time, exposure_per_image)
+    yield from bps.mv(eiger.acquire_period, exposure_per_image)
+    yield from bps.mv(eiger.file_prefix, file_prefix)
+    yield from bps.mv(eiger.fw_name_pattern, data_directory_name)
+    yield from bps.mv(eiger.file_number_start, file_number_start)
+
+def setup_eiger_stop_acquire_and_wait():
+    yield from bps.mv(eiger.acquire, 0)
+    # wait until Acquire_RBV is 0
