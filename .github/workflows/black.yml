@@ -15,7 +15,7 @@ jobs:
           # installation problems if out of date.
           python -m pip install --upgrade pip setuptools numpy
 
-          pip install black
+          pip install black==19.10b
       - name: Run black
         run: |
-          black . -l 115 --check
+          black . --check
