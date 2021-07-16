@@ -7,16 +7,7 @@ def zebra_daq_prep():
     yield from bps.mv(zebra.reset, 1)
     yield from bps.sleep(2.0)
     yield from bps.mv(
-        zebra.out1,
-        31,
-        zebra.m1_set_pos,
-        1,
-        zebra.m2_set_pos,
-        1,
-        zebra.m3_set_pos,
-        1,
-        zebra.pc.arm_sel,
-        1,
+        zebra.out1, 31, zebra.m1_set_pos, 1, zebra.m2_set_pos, 1, zebra.m3_set_pos, 1, zebra.pc.arm_sel, 1,
     )
 
 
@@ -32,9 +23,7 @@ def setup_zebra_vector_scan(
 ):
     yield from bps.mv(zebra.pc.gate.sel, angle_start)
     if is_still is False:
-        yield from bps.mv(
-            zebra.pc.gate.width, gate_width, zebra.pc.gate.step, scan_width
-        )
+        yield from bps.mv(zebra.pc.gate.width, gate_width, zebra.pc.gate.step, scan_width)
     yield from bps.mv(
         zebra.pc.gate.num_gates,
         1,
@@ -62,16 +51,11 @@ def setup_zebra_vector_scan_for_raster(
 ):
     yield from bps.mv(zebra.pc.encoder, scan_encoder)
     yield from bps.sleep(1.0)
-    yield from bps.mv(
-        zebra.pc.direction, 0, zebra.pc.gate.sel, 0
-    )  # direction, 0 = positive
+    yield from bps.mv(zebra.pc.direction, 0, zebra.pc.gate.sel, 0)  # direction, 0 = positive
     yield from bps.mv(zebra.pc.gate.start, angle_start)
     if image_width != 0:
         yield from bps.mv(
-            zebra.pc.gate.width,
-            num_images * image_width,
-            zebra.pc.gate.step,
-            num_images * image_width + 0.01,
+            zebra.pc.gate.width, num_images * image_width, zebra.pc.gate.step, num_images * image_width + 0.01,
         )
     yield from bps.mv(
         zebra.pc.gate.num_gates,

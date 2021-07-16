@@ -119,19 +119,9 @@ def configure_nyx_flyer():
 
 
 @bpp.run_decorator(md={})
-def actual_scan(
-    vector, zebra, angle_start, scanWidth, imgWidth, exposurePeriodPerImage
-):
+def actual_scan(vector, zebra, angle_start, scanWidth, imgWidth, exposurePeriodPerImage):
     yield from configure_flyer(
-        vector,
-        zebra,
-        angle_start,
-        scanWidth,
-        imgWidth,
-        exposurePeriodPerImage,
-        "abc",
-        "abc",
-        1,
+        vector, zebra, angle_start, scanWidth, imgWidth, exposurePeriodPerImage, "abc", "abc", 1,
     )
     yield from bp.fly([mx_flyer])
 
