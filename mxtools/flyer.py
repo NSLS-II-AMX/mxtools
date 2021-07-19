@@ -92,6 +92,7 @@ def configure_flyer(
         pass
     detector_dead_time = 0.001  # TODO get real dead time from detector object
     yield from setup_vector_program(
+        vector=vector,
         num_images=numImages,
         angle_start=angle_start,
         angle_end=angle_end,
@@ -104,6 +105,7 @@ def configure_flyer(
     PS = (exposurePeriodPerImage) * 1000.0
     GW = scanWidth - (1.0 - (PW / PS)) * (imgWidth / 2.0)
     yield from setup_zebra_vector_scan(
+        zebra=zebra,
         angle_start=angle_start,
         gate_width=GW,
         scan_width=scanWidth,
