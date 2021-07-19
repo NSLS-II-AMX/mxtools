@@ -9,7 +9,7 @@ import bluesky.plan_stubs as bps
 logger = logging.getLogger(__name__)
 
 
-def zebra_daq_prep():
+def zebra_daq_prep(zebra):
     yield from bps.mv(zebra.reset, 1)
     yield from bps.sleep(2.0)
     yield from bps.mv(
@@ -18,6 +18,7 @@ def zebra_daq_prep():
 
 
 def setup_zebra_vector_scan(
+    zebra,
     angle_start,
     gate_width,
     scan_width,
@@ -47,6 +48,7 @@ def setup_zebra_vector_scan(
 
 
 def setup_zebra_vector_scan_for_raster(
+    zebra,
     angle_start,
     image_width,
     exposure_time_per_image,
@@ -79,7 +81,7 @@ def setup_zebra_vector_scan_for_raster(
     )
 
 
-def setup_vector_program(num_images, angle_start, angle_end, exposure_period_per_image):
+def setup_vector_program(vector, num_images, angle_start, angle_end, exposure_period_per_image):
     yield from bps.mv(
         vector.num_frames,
         num_images,
@@ -94,18 +96,19 @@ def setup_vector_program(num_images, angle_start, angle_end, exposure_period_per
     )
 
 
-def setup_eiger_exposure(exposure_time, exposure_period):
+def setup_eiger_exposure(eiger, exposure_time, exposure_period):
     yield from bps.mv(eiger.acquire_time(exposure_time))
     yield from bps.mv(eiger.acquire_period(exposure_period))
 
 
-def setup_eiger_triggers(mode, num_triggers, exposure_per_image):
+def setup_eiger_triggers(eiger, mode, num_triggers, exposure_per_image):
     yield from bps.mv(eiger.trigger_mode, mode)
     yield from bps.mv(eiger.num_triggers, num_triggers)
     yield from bps.mv(eiger.trigger_exposure, exposure_per_image)
 
 
 def setup_eiger_arming(
+    eiger,
     start,
     width,
     num_images,
@@ -150,6 +153,6 @@ def setup_eiger_arming(
     logger.info(f"arm time = {time.time() - start_arm}")
 
 
-def setup_eiger_stop_acquire_and_wait():
+def setup_eiger_stop_acquire_and_wait(eiger):
     yield from bps.mv(eiger.acquire, 0)
     # wait until Acquire_RBV is 0
