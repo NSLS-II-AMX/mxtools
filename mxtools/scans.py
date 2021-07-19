@@ -6,8 +6,6 @@ import time
 
 import bluesky.plan_stubs as bps
 
-from fmx import eiger, vector, zebra
-
 logger = logging.getLogger(__name__)
 
 
