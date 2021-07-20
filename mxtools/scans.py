@@ -126,7 +126,7 @@ def setup_eiger_arming(
     yield from bps.mv(eiger.file_owner_grp, grp.getgrgid(os.getgid())[0])
     yield from bps.mv(eiger.file_perms, 420)
     file_prefix_minus_directory = str(file_prefix)
-    file_prefix_minus_directory = file_prefix_minus_directory.split('/')[-1]
+    file_prefix_minus_directory = file_prefix_minus_directory.split("/")[-1]
 
     yield from bps.mv(eiger.acquire_time, exposure_per_image)
     yield from bps.mv(eiger.acquire_period, exposure_per_image)
