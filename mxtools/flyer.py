@@ -3,10 +3,10 @@ from collections import deque
 
 from bluesky import plan_stubs as bps
 from bluesky import plans as bp
-from bluesky import preprocessors as bpp
 from ophyd.sim import NullStatus
 from ophyd.status import SubscriptionStatus
-from .scans import setup_vector_program, zebra_daq_prep, setup_zebra_vector_scan
+
+from .scans import setup_vector_program, setup_zebra_vector_scan, zebra_daq_prep
 
 
 class MXFlyer:
@@ -61,6 +61,9 @@ class MXFlyer:
         for item in items:
             yield item
 
+    def unstage(self):
+        ...
+
 
 def configure_flyer(
     vector,
@@ -91,18 +94,20 @@ def configure_flyer(
         pass
     detector_dead_time = 0.001  # TODO get real dead time from detector object
     yield from setup_vector_program(
+        vector=vector,
         num_images=numImages,
         angle_start=angle_start,
         angle_end=angle_end,
         exposure_period_per_image=exposurePeriodPerImage,
     )
-    yield from zebra_daq_prep()
+    yield from zebra_daq_prep(zebra)
     yield from bps.sleep(1.0)
 
     PW = (exposurePeriodPerImage - detector_dead_time) * 1000.0
     PS = (exposurePeriodPerImage) * 1000.0
     GW = scanWidth - (1.0 - (PW / PS)) * (imgWidth / 2.0)
     yield from setup_zebra_vector_scan(
+        zebra=zebra,
         angle_start=angle_start,
         gate_width=GW,
         scan_width=scanWidth,
@@ -118,13 +123,11 @@ def configure_nyx_flyer():
     ...
 
 
-@bpp.run_decorator(md={})
-def actual_scan(vector, zebra, angle_start, scanWidth, imgWidth, exposurePeriodPerImage):
+def actual_scan(mx_flyer, vector, zebra, angle_start, scanWidth, imgWidth, exposurePeriodPerImage):
     yield from configure_flyer(
         vector, zebra, angle_start, scanWidth, imgWidth, exposurePeriodPerImage, "abc", "abc", 1,
     )
     yield from bp.fly([mx_flyer])
 
 
-mx_flyer = MXFlyer(vector=vector, zebra=zebra, eiger=eiger_single)  # noqa: F821
 # vector, zebra, eiger_single are assumed to be in the namespace already
