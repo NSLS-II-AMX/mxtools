@@ -3,7 +3,6 @@ from collections import deque
 
 from bluesky import plan_stubs as bps
 from bluesky import plans as bp
-from bluesky import preprocessors as bpp
 from ophyd.sim import NullStatus
 from ophyd.status import SubscriptionStatus
 
@@ -64,6 +63,7 @@ class MXFlyer:
 
     def unstage(self):
         ...
+
 
 def configure_flyer(
     vector,
