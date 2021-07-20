@@ -150,10 +150,3 @@ def set_eiger_defaults(eiger):
     #     stats.read_attrs = ['total']
     eiger.file.read_attrs = []
     eiger.cam.read_attrs = []
-
-
-# Eiger 1M using internal trigger
-eiger_single = EigerSingleTriggerV26("XF:17IDC-ES:FMX{Det:Eig16M}", name="eiger_single")
-# TODO: uncomment for V33
-# eiger_single.cam.ensure_nonblocking()
-set_eiger_defaults(eiger_single)
