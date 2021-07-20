@@ -129,5 +129,4 @@ def actual_scan(vector, zebra, angle_start, scanWidth, imgWidth, exposurePeriodP
     yield from bp.fly([mx_flyer])
 
 
-mx_flyer = MXFlyer(vector=vector, zebra=zebra, eiger=eiger_single)  # noqa: F821
 # vector, zebra, eiger_single are assumed to be in the namespace already
