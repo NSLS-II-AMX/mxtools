@@ -62,6 +62,8 @@ class MXFlyer:
         for item in items:
             yield item
 
+    def unstage(self):
+        ...
 
 def configure_flyer(
     vector,
@@ -98,7 +100,7 @@ def configure_flyer(
         angle_end=angle_end,
         exposure_period_per_image=exposurePeriodPerImage,
     )
-    yield from zebra_daq_prep()
+    yield from zebra_daq_prep(zebra)
     yield from bps.sleep(1.0)
 
     PW = (exposurePeriodPerImage - detector_dead_time) * 1000.0
@@ -121,8 +123,7 @@ def configure_nyx_flyer():
     ...
 
 
-@bpp.run_decorator(md={})
-def actual_scan(vector, zebra, angle_start, scanWidth, imgWidth, exposurePeriodPerImage):
+def actual_scan(mx_flyer, vector, zebra, angle_start, scanWidth, imgWidth, exposurePeriodPerImage):
     yield from configure_flyer(
         vector, zebra, angle_start, scanWidth, imgWidth, exposurePeriodPerImage, "abc", "abc", 1,
     )
