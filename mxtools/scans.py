@@ -97,14 +97,14 @@ def setup_vector_program(vector, num_images, angle_start, angle_end, exposure_pe
 
 
 def setup_eiger_exposure(eiger, exposure_time, exposure_period):
-    yield from bps.mv(eiger.acquire_time(exposure_time))
-    yield from bps.mv(eiger.acquire_period(exposure_period))
+    yield from bps.mv(eiger.cam.acquire_time(exposure_time))
+    yield from bps.mv(eiger.cam.acquire_period(exposure_period))
 
 
 def setup_eiger_triggers(eiger, mode, num_triggers, exposure_per_image):
-    yield from bps.mv(eiger.trigger_mode, mode)
-    yield from bps.mv(eiger.num_triggers, num_triggers)
-    yield from bps.mv(eiger.trigger_exposure, exposure_per_image)
+    yield from bps.mv(eiger.cam.trigger_mode, mode)
+    yield from bps.mv(eiger.cam.num_triggers, num_triggers)
+    yield from bps.mv(eiger.cam.trigger_exposure, exposure_per_image)
 
 
 def setup_eiger_arming(
@@ -121,33 +121,33 @@ def setup_eiger_arming(
     wavelength,
     det_distance_m,
 ):
-    yield from bps.mv(eiger.save_files, 1)
-    yield from bps.mv(eiger.file_owner, getpass.getuser())
-    yield from bps.mv(eiger.file_owner_grp, grp.getgrgid(os.getgid())[0])
-    yield from bps.mv(eiger.file_perms, 420)
+    yield from bps.mv(eiger.cam.save_files, 1)
+    yield from bps.mv(eiger.cam.file_owner, getpass.getuser())
+    yield from bps.mv(eiger.cam.file_owner_grp, grp.getgrgid(os.getgid())[0])
+    yield from bps.mv(eiger.cam.file_perms, 420)
     file_prefix_minus_directory = str(file_prefix)
     file_prefix_minus_directory = file_prefix_minus_directory.split("/")[-1]
 
-    yield from bps.mv(eiger.acquire_time, exposure_per_image)
-    yield from bps.mv(eiger.acquire_period, exposure_per_image)
-    yield from bps.mv(eiger.num_images, num_images)
-    yield from bps.mv(eiger.file_path, data_directory_name)
-    yield from bps.mv(eiger.fw_name_pattern, f"{file_prefix_minus_directory}_$id")
-    yield from bps.mv(eiger.sequence_id, file_number_start)
+    yield from bps.mv(eiger.cam.acquire_time, exposure_per_image)
+    yield from bps.mv(eiger.cam.acquire_period, exposure_per_image)
+    yield from bps.mv(eiger.cam.num_images, num_images)
+    yield from bps.mv(eiger.cam.file_path, data_directory_name)
+    yield from bps.mv(eiger.cam.fw_name_pattern, f"{file_prefix_minus_directory}_$id")
+    yield from bps.mv(eiger.cam.sequence_id, file_number_start)
 
     # originally from detector_set_fileheader
-    yield from bps.mv(eiger.beam_center_x, x_beam)
-    yield from bps.mv(eiger.beam_center_y, y_beam)
-    yield from bps.mv(eiger.omega_incr, width)
-    yield from bps.mv(eiger.omega_start, start)
-    yield from bps.mv(eiger.wavelength, wavelength)
-    yield from bps.mv(eiger.det_distance, det_distance_m)
+    yield from bps.mv(eiger.cam.beam_center_x, x_beam)
+    yield from bps.mv(eiger.cam.beam_center_y, y_beam)
+    yield from bps.mv(eiger.cam.omega_incr, width)
+    yield from bps.mv(eiger.cam.omega_start, start)
+    yield from bps.mv(eiger.cam.wavelength, wavelength)
+    yield from bps.mv(eiger.cam.det_distance, det_distance_m)
 
     start_arm = time.time()
-    yield from bps.mv(eiger.acquire, 1)
+    yield from bps.mv(eiger.cam.acquire, 1)
     logger.info(f"arm time = {time.time() - start_arm}")
 
 
 def setup_eiger_stop_acquire_and_wait(eiger):
-    yield from bps.mv(eiger.acquire, 0)
+    yield from bps.mv(eiger.cam.acquire, 0)
     # wait until Acquire_RBV is 0

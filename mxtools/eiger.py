@@ -4,7 +4,7 @@ from pathlib import PurePath
 from types import SimpleNamespace
 
 from ophyd import Component as Cpt
-from ophyd import Device, EpicsPathSignal, EpicsSignalRO, ImagePlugin, Signal, SingleTrigger
+from ophyd import Device, EpicsPathSignal, EpicsSignal, EpicsSignalRO, ImagePlugin, Signal, SingleTrigger
 from ophyd.areadetector import EigerDetector
 from ophyd.areadetector.base import ADComponent, EpicsSignalWithRBV
 from ophyd.areadetector.filestore_mixins import FileStoreBase, new_short_uid
@@ -12,7 +12,7 @@ from ophyd.utils import set_and_wait
 
 
 class EigerSimulatedFilePlugin(Device, FileStoreBase):
-    sequence_id = ADComponent(EpicsSignalRO, "SequenceId")
+    sequence_id = ADComponent(EpicsSignal, "SequenceId")
     file_path = ADComponent(EpicsPathSignal, "FilePath", string=True, path_semantics="posix")
     file_write_name_pattern = ADComponent(EpicsSignalWithRBV, "FWNamePattern", string=True)
     file_write_images_per_file = ADComponent(EpicsSignalWithRBV, "FWNImagesPerFile")
