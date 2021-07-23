@@ -133,7 +133,9 @@ def setup_eiger_arming(
     yield from bps.mv(eiger.cam.num_images, num_images)
     yield from bps.mv(eiger.cam.file_path, data_directory_name)
     yield from bps.mv(eiger.cam.fw_name_pattern, f"{file_prefix_minus_directory}_$id")
-    yield from bps.mv(eiger.cam.sequence_id, file_number_start)
+
+    # TODO: change it back to eiger.cam.sequence_id once the ophyd PR https://github.com/bluesky/ophyd/pull/1001 is merged/released.
+    yield from bps.mv(eiger.file.sequence_id, file_number_start)
 
     # originally from detector_set_fileheader
     yield from bps.mv(eiger.cam.beam_center_x, x_beam)
