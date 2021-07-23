@@ -18,6 +18,7 @@ class EigerSimulatedFilePlugin(Device, FileStoreBase):
     file_write_images_per_file = ADComponent(EpicsSignalWithRBV, "FWNImagesPerFile")
     current_run_start_uid = Cpt(Signal, value="", add_prefix=())
     enable = SimpleNamespace(get=lambda: True)
+    external_name = Cpt(Signal, value="")
 
     def __init__(self, *args, **kwargs):
         self.sequence_id_offset = 1
@@ -29,7 +30,7 @@ class EigerSimulatedFilePlugin(Device, FileStoreBase):
         self._datum_kwargs_map = dict()  # store kwargs for each uid
 
     def stage(self):
-        res_uid = new_short_uid()
+        res_uid = self.external_name.get()
         write_path = datetime.datetime.now().strftime(self.write_path_template)
         set_and_wait(self.file_path, f"{write_path}/")
         set_and_wait(self.file_write_name_pattern, "{}_$id".format(res_uid))
