@@ -70,18 +70,20 @@ class EigerBaseV26(EigerDetector):
         # before parent
         ret = super().stage(*args, **kwargs)
         # after parent
-        set_and_wait(self.cam.manual_trigger, 1)
+        #set_and_wait(self.cam.manual_trigger, 1)
         return ret
 
     def unstage(self):
-        set_and_wait(self.cam.manual_trigger, 0)
+        #set_and_wait(self.cam.manual_trigger, 0)
         super().unstage()
 
 
 class EigerSingleTriggerV26(SingleTrigger, EigerBaseV26):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.stage_sigs["cam.trigger_mode"] = 0
+        #self.stage_sigs["cam.trigger_mode"] = 0 #original: single manual trigger
+        self.stage_sigs["cam.trigger_mode"] = 3
+        self.stage_sigs.pop("cam.acquire") #remove acquire=0 
         # self.stage_sigs['shutter_mode'] = 1  # 'EPICS PV'
         self.stage_sigs.update({"cam.num_triggers": 1, "cam.compression_algo": "BS LZ4"})
 
