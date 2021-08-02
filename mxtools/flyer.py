@@ -126,9 +126,17 @@ def configure_nyx_flyer():
 def actual_scan(mx_flyer, eiger, vector, zebra, angle_start, scanWidth, imgWidth, exposurePeriodPerImage):
     file_prefix = "abc"
     data_directory_name = "def"
-    yield from bps.mv(eiger.file.external_name, 'prefix_name')
+    yield from bps.mv(eiger.file.external_name, "prefix_name")
     yield from configure_flyer(
-        vector, zebra, angle_start, scanWidth, imgWidth, exposurePeriodPerImage, file_prefix, data_directory_name, 1,
+        vector,
+        zebra,
+        angle_start,
+        scanWidth,
+        imgWidth,
+        exposurePeriodPerImage,
+        file_prefix,
+        data_directory_name,
+        1,
     )
     yield from bp.fly([mx_flyer])
 
