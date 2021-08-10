@@ -1,3 +1,5 @@
+import time as ttime
+
 from ophyd import Component as Cpt
 from ophyd import Device, EpicsSignal, EpicsSignalRO
 from ophyd.signal import Signal
@@ -22,35 +24,46 @@ class ZebraPCPulse(ZebraPCBase):
 
 
 class ZebraPCArm(Device):
-    trig_source = Cpt(EpicsSignal, write_pv="SEL", read_pv="SEL:RBV",
-                      kind="omitted", auto_monitor=True, add_prefix=("write_pv", "read_pv"),
-                      doc="Example: XF:17IDC-ES:FMX{Zeb:3}:PC_ARM_SEL")
-    arm_status = Cpt(EpicsSignalRO, "INP:STA", kind="omitted", auto_monitor=True,
-                     doc="Example: XF:17IDC-ES:FMX{Zeb:3}:PC_ARM_INP:STA")
+    trig_source = Cpt(
+        EpicsSignal,
+        write_pv="SEL",
+        read_pv="SEL:RBV",
+        kind="omitted",
+        auto_monitor=True,
+        add_prefix=("write_pv", "read_pv"),
+        doc="Example: XF:17IDC-ES:FMX{Zeb:3}:PC_ARM_SEL",
+    )
+    arm_status = Cpt(
+        EpicsSignalRO,
+        "INP:STA",
+        kind="omitted",
+        auto_monitor=True,
+        doc="Example: XF:17IDC-ES:FMX{Zeb:3}:PC_ARM_INP:STA",
+    )
     output = Cpt(EpicsSignalRO, "OUT", kind="omitted", auto_monitor=True)
     # This is handled by vector.go(...), so we don't need the 'arm' component.
     # arm = Cpt(EpicsSignal, "", kind="normal", auto_monitor=True)
-    # Example: XF:17IDC-ES:FMX{Zeb:3}:PC_ARM_INP:STA   
+    # Example: XF:17IDC-ES:FMX{Zeb:3}:PC_ARM_INP:STA
 
 
 class ZebraPositionCaptureData(Device):
-    num_captured = Cpt(EpicsSignalRO, 'NUM_CAP', kind="normal")
-    num_downloaded = Cpt(EpicsSignalRO, 'NUM_DOWN', kind="normal")
+    num_captured = Cpt(EpicsSignalRO, "NUM_CAP", kind="normal")
+    num_downloaded = Cpt(EpicsSignalRO, "NUM_DOWN", kind="normal")
 
-    time = Cpt(EpicsSignalRO, 'TIME', kind="normal")
+    time = Cpt(EpicsSignalRO, "TIME", kind="normal")
 
-    enc1 = Cpt(EpicsSignalRO, 'ENC1', kind="omitted")
-    enc2 = Cpt(EpicsSignalRO, 'ENC2', kind="omitted")
-    enc3 = Cpt(EpicsSignalRO, 'ENC3', kind="omitted")
-    enc4 = Cpt(EpicsSignalRO, 'ENC4', kind="normal")
+    enc1 = Cpt(EpicsSignalRO, "ENC1", kind="omitted")
+    enc2 = Cpt(EpicsSignalRO, "ENC2", kind="omitted")
+    enc3 = Cpt(EpicsSignalRO, "ENC3", kind="omitted")
+    enc4 = Cpt(EpicsSignalRO, "ENC4", kind="normal")
 
-    sys1 = Cpt(EpicsSignalRO, 'SYS1', kind="omitted")
-    sys2 = Cpt(EpicsSignalRO, 'SYS2', kind="omitted")
+    sys1 = Cpt(EpicsSignalRO, "SYS1", kind="omitted")
+    sys2 = Cpt(EpicsSignalRO, "SYS2", kind="omitted")
 
-    div1 = Cpt(EpicsSignalRO, 'DIV1', kind="omitted")
-    div2 = Cpt(EpicsSignalRO, 'DIV2', kind="omitted")
-    div3 = Cpt(EpicsSignalRO, 'DIV3', kind="omitted")
-    div4 = Cpt(EpicsSignalRO, 'DIV4', kind="omitted")
+    div1 = Cpt(EpicsSignalRO, "DIV1", kind="omitted")
+    div2 = Cpt(EpicsSignalRO, "DIV2", kind="omitted")
+    div3 = Cpt(EpicsSignalRO, "DIV3", kind="omitted")
+    div4 = Cpt(EpicsSignalRO, "DIV4", kind="omitted")
 
 
 class ZebraPositionCompare(Device):
@@ -58,10 +71,9 @@ class ZebraPositionCompare(Device):
     # arm_status = Cpt(EpicsSignalRO, "ARM_INP.STA", kind="omitted")
     # arm_sel = Cpt(EpicsSignal, "ARM_SEL", kind="omitted")
     download_count = Cpt(EpicsSignalRO, "NUM_DOWN", kind="omitted")
-    
+
     arm_signal = Cpt(EpicsSignal, "ARM", kind="omitted")
-    disarm = Cpt(EpicsSignal, "DISARM", kind="omitted",
-                 doc="Example: XF:17IDC-ES:FMX{Zeb:3}:PC_DISARM")
+    disarm = Cpt(EpicsSignal, "DISARM", kind="omitted", doc="Example: XF:17IDC-ES:FMX{Zeb:3}:PC_DISARM")
 
     encoder = Cpt(EpicsSignal, "ENC", kind="config", auto_monitor=True)
     enc_x = Cpt(EpicsSignal, "ENC1", kind="omitted")
@@ -81,7 +93,7 @@ class ZebraAnd(Device):
 
 
 class Zebra(Device):
-    download_status = Cpt(EpicsSignalRO, 'ARRAY_ACQ', kind="omitted")
+    download_status = Cpt(EpicsSignalRO, "ARRAY_ACQ", kind="omitted")
     reset = Cpt(EpicsSignal, "SYS_RESET.PROC", kind="omitted")
     m1_set_pos = Cpt(EpicsSignal, "M1:SETPOS.PROC", kind="omitted")
     m2_set_pos = Cpt(EpicsSignal, "M2:SETPOS.PROC", kind="omitted")
@@ -94,11 +106,10 @@ class Zebra(Device):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        formatted_to_be_normal = [f"{self.pc.data.name}_enc{num}"
-                                  for num in self.enc_of_interest.get()]
+        formatted_to_be_normal = [f"{self.pc.data.name}_enc{num}" for num in self.enc_of_interest.get()]
         for cpt in self.pc.data.component_names:
             cpt_obj = getattr(self.pc.data, cpt)
-            if 'enc' in cpt:
+            if "enc" in cpt:
                 if cpt_obj.name in formatted_to_be_normal:
                     cpt_obj.kind = "normal"
                 else:
@@ -118,7 +129,7 @@ class Zebra(Device):
 
         disarmed_signal = self.download_status
 
-        self._collection_ts = time.time()
+        self._collection_ts = ttime.time()
 
         def armed_status_cb(value, old_value, obj, **kwargs):
             if int(old_value) == 0 and int(value) == 1:
@@ -148,25 +159,27 @@ class Zebra(Device):
 
         # Arrays of captured positions
         data = {
-            f'enc{i}': getattr(pc.data, f'enc{i}').get()
-                for i in self.enc_of_interest.get()
-                if getattr(pc, f'capture_enc{i}').get()
+            f"enc{i}": getattr(pc.data, f"enc{i}").get()
+            for i in self.enc_of_interest.get()
+            if getattr(pc, f"capture_enc{i}").get()
         }
 
         for i, timestamp in enumerate(ts):
             yield {
-                'data': { k: v[i] for k, v in data.items() },
-                'timestamps': { k: timestamp for k in data.keys() },
-                'time' : timestamp
+                "data": {k: v[i] for k, v in data.items()},
+                "timestamps": {k: timestamp for k in data.keys()},
+                "time": timestamp,
             }
 
     def describe_collect(self):
         return {
-            'primary': {
-                f'enc{i}': {
-                    'source': 'PV:' + getattr(self.pc.data, f'enc{i}').pvname,
-                    'shape': [],
-                    'dtype': 'number'
-                } for i in self.enc_of_interest.get() if getattr(self.pc, f'capture_enc{i}').get()
+            "primary": {
+                f"enc{i}": {
+                    "source": "PV:" + getattr(self.pc.data, f"enc{i}").pvname,
+                    "shape": [],
+                    "dtype": "number",
+                }
+                for i in self.enc_of_interest.get()
+                if getattr(self.pc, f"capture_enc{i}").get()
             }
         }

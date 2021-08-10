@@ -1,11 +1,12 @@
 import getpass
 import grp
 import logging
-from mxtools.eiger import EXTERNAL_SERIES
 import os
 import time
 
 import bluesky.plan_stubs as bps
+
+from mxtools.eiger import EXTERNAL_SERIES
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +59,10 @@ def setup_zebra_vector_scan_for_raster(
     yield from bps.mv(zebra.pc.gate.start, angle_start)
     if image_width != 0:
         yield from bps.mv(
-            zebra.pc.gate.width, num_images * image_width, zebra.pc.gate.step, num_images * image_width + 0.01,
+            zebra.pc.gate.width,
+            num_images * image_width,
+            zebra.pc.gate.step,
+            num_images * image_width + 0.01,
         )
     yield from bps.mv(
         zebra.pc.gate.num_gates,
@@ -85,7 +89,8 @@ def setup_vector_program(vector, num_images, angle_start, angle_end, exposure_pe
         vector.end.omega,
         angle_end,
         vector.frame_exptime,
-        exposure_period_per_image * 1000.0)
+        exposure_period_per_image * 1000.0,
+    )
     yield from bps.mv(vector.hold, 0)
 
 
