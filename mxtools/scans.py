@@ -1,6 +1,7 @@
 import getpass
 import grp
 import logging
+from mxtools.eiger import EXTERNAL_ENABLE, EXTERNAL_SERIES
 import os
 import time
 
@@ -12,9 +13,11 @@ logger = logging.getLogger(__name__)
 def zebra_daq_prep(zebra):
     yield from bps.mv(zebra.reset, 1)
     yield from bps.sleep(2.0)
-    yield from bps.mv(
-        zebra.out1, 31, zebra.m1_set_pos, 1, zebra.m2_set_pos, 1, zebra.m3_set_pos, 1, zebra.pc.arm_sel, 1,
-    )
+    yield from bps.mv(zebra.out1, 31)
+    yield from bps.mv(zebra.m1_set_pos, 1)
+    yield from bps.mv(zebra.m2_set_pos, 1)
+    yield from bps.mv(zebra.m3_set_pos, 1)
+    yield from bps.mv(zebra.pc.arm_sel, 1)
 
 
 def setup_zebra_vector_scan(
@@ -31,20 +34,12 @@ def setup_zebra_vector_scan(
     yield from bps.mv(zebra.pc.gate.start, angle_start)
     if is_still is False:
         yield from bps.mv(zebra.pc.gate.width, gate_width, zebra.pc.gate.step, scan_width)
-    yield from bps.mv(
-        zebra.pc.gate.num_gates,
-        1,
-        zebra.pc.pulse.start,
-        0,
-        zebra.pc.pulse.width,
-        pulse_width,
-        zebra.pc.pulse.step,
-        pulse_step,
-        zebra.pc.pulse.delay,
-        exposure_period_per_image / 2 * 1000,
-        zebra.pc.pulse.max,
-        num_images,
-    )
+    yield from bps.mv(zebra.pc.gate.num_gates, 1)
+    yield from bps.mv(zebra.pc.pulse.start, 0)
+    yield from bps.mv(zebra.pc.pulse.width, pulse_width)
+    yield from bps.mv(zebra.pc.pulse.step, pulse_step)
+    yield from bps.mv(zebra.pc.pulse.delay, exposure_period_per_image / 2 * 1000)
+    yield from bps.mv(zebra.pc.pulse.max, num_images)
 
 
 def setup_zebra_vector_scan_for_raster(
@@ -90,10 +85,8 @@ def setup_vector_program(vector, num_images, angle_start, angle_end, exposure_pe
         vector.end.omega,
         angle_end,
         vector.frame_exptime,
-        exposure_period_per_image * 1000.0,
-        vector.hold,
-        0,
-    )
+        exposure_period_per_image * 1000.0)
+    yield from bps.mv(vector.hold, 0)
 
 
 def setup_eiger_exposure(eiger, exposure_time, exposure_period):
@@ -121,7 +114,7 @@ def setup_eiger_arming(
     wavelength,
     det_distance_m,
 ):
-    yield from bps.mv(eiger.cam.trigger_mode, 3)
+    yield from bps.mv(eiger.cam.trigger_mode, EXTERNAL_SERIES)
 
     yield from bps.mv(eiger.cam.save_files, 1)
     yield from bps.mv(eiger.cam.file_owner, getpass.getuser())

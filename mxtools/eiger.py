@@ -10,6 +10,10 @@ from ophyd.areadetector.base import ADComponent, EpicsSignalWithRBV
 from ophyd.areadetector.filestore_mixins import FileStoreBase  # , new_short_uid
 from ophyd.utils import set_and_wait
 
+INTERNAL_SERIES = 0
+INTERNAL_ENABLE = 1
+EXTERNAL_SERIES = 2
+EXTERNAL_ENABLE = 3
 
 class EigerSimulatedFilePlugin(Device, FileStoreBase):
     sequence_id = ADComponent(EpicsSignal, "SequenceId")
@@ -30,6 +34,7 @@ class EigerSimulatedFilePlugin(Device, FileStoreBase):
         self._datum_kwargs_map = dict()  # store kwargs for each uid
 
     def stage(self):
+        print('staging detector')
         res_uid = self.external_name.get()
         write_path = datetime.datetime.now().strftime(self.write_path_template)
         set_and_wait(self.file_path, f"{write_path}/")
@@ -41,6 +46,7 @@ class EigerSimulatedFilePlugin(Device, FileStoreBase):
         self._fn = fn
         res_kwargs = {"images_per_file": ipf}
         self._generate_resource(res_kwargs)
+        print('done staging detector')
 
     def generate_datum(self, key, timestamp, datum_kwargs):
         # The detector keeps its own counter which is uses label HDF5
@@ -82,7 +88,7 @@ class EigerSingleTriggerV26(SingleTrigger, EigerBaseV26):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # self.stage_sigs["cam.trigger_mode"] = 0 #original: single manual trigger
-        self.stage_sigs["cam.trigger_mode"] = 3
+        self.stage_sigs["cam.trigger_mode"] = EXTERNAL_SERIES
         self.stage_sigs.pop("cam.acquire")  # remove acquire=0
         # self.stage_sigs['shutter_mode'] = 1  # 'EPICS PV'
         self.stage_sigs.update({"cam.num_triggers": 1, "cam.compression_algo": "BS LZ4"})

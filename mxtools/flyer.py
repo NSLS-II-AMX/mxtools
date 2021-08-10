@@ -68,6 +68,7 @@ class MXFlyer:
 def configure_flyer(
     vector,
     zebra,
+    eiger_single,
     angle_start,
     scanWidth,
     imgWidth,
@@ -92,7 +93,7 @@ def configure_flyer(
     else:
         yield from bps.mv(vector.buffer_time, 3)
         pass
-    detector_dead_time = 0.001  # TODO get real dead time from detector object
+    detector_dead_time = eiger_single.cam.dead_time.get()
     yield from setup_vector_program(
         vector=vector,
         num_images=numImages,
@@ -130,6 +131,7 @@ def actual_scan(mx_flyer, eiger, vector, zebra, angle_start, scanWidth, imgWidth
     yield from configure_flyer(
         vector,
         zebra,
+        eiger,
         angle_start,
         scanWidth,
         imgWidth,
