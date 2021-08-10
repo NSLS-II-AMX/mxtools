@@ -1,7 +1,7 @@
 import getpass
 import grp
 import logging
-from mxtools.eiger import EXTERNAL_ENABLE, EXTERNAL_SERIES
+from mxtools.eiger import EXTERNAL_SERIES
 import os
 import time
 

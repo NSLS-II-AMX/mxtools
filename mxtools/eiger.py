@@ -15,6 +15,7 @@ INTERNAL_ENABLE = 1
 EXTERNAL_SERIES = 2
 EXTERNAL_ENABLE = 3
 
+
 class EigerSimulatedFilePlugin(Device, FileStoreBase):
     sequence_id = ADComponent(EpicsSignal, "SequenceId")
     file_path = ADComponent(EpicsPathSignal, "FilePath", string=True, path_semantics="posix")
