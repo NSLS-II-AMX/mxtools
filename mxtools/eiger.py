@@ -10,6 +10,7 @@ from ophyd.areadetector.base import ADComponent, EpicsSignalWithRBV
 from ophyd.areadetector.filestore_mixins import FileStoreBase  # , new_short_uid
 from ophyd.utils import set_and_wait
 
+# TODO: convert it to Enum class.
 INTERNAL_SERIES = 0
 INTERNAL_ENABLE = 1
 EXTERNAL_SERIES = 2
