@@ -18,7 +18,7 @@ def zebra_daq_prep(zebra):
     yield from bps.mv(zebra.m1_set_pos, 1)
     yield from bps.mv(zebra.m2_set_pos, 1)
     yield from bps.mv(zebra.m3_set_pos, 1)
-    yield from bps.mv(zebra.pc.arm_sel, 1)
+    yield from bps.mv(zebra.pc.arm.trig_source, 1)
 
 
 def setup_zebra_vector_scan(

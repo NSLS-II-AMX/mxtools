@@ -10,6 +10,8 @@ from ophyd.areadetector.base import ADComponent, EpicsSignalWithRBV
 from ophyd.areadetector.filestore_mixins import FileStoreBase  # , new_short_uid
 from ophyd.utils import set_and_wait
 
+from . import print_now
+
 # TODO: convert it to Enum class.
 INTERNAL_SERIES = 0
 INTERNAL_ENABLE = 1
@@ -36,7 +38,7 @@ class EigerSimulatedFilePlugin(Device, FileStoreBase):
         self._datum_kwargs_map = dict()  # store kwargs for each uid
 
     def stage(self):
-        print("staging detector")
+        print(f"{print_now()} staging detector {self.name}")
         res_uid = self.external_name.get()
         write_path = datetime.datetime.now().strftime(self.write_path_template)
         set_and_wait(self.file_path, f"{write_path}/")
@@ -48,7 +50,7 @@ class EigerSimulatedFilePlugin(Device, FileStoreBase):
         self._fn = fn
         res_kwargs = {"images_per_file": ipf}
         self._generate_resource(res_kwargs)
-        print("done staging detector")
+        print(f"{print_now()} done staging detector {self.name}")
 
     def generate_datum(self, key, timestamp, datum_kwargs):
         # The detector keeps its own counter which is uses label HDF5
@@ -66,7 +68,7 @@ class EigerBaseV26(EigerDetector):
     file = Cpt(
         EigerSimulatedFilePlugin,
         suffix="cam1:",
-        write_path_template="/GPFS/CENTRAL/xf17id2/mfuchs/fmxoperator/20200222/mx999999-1665/",
+        write_path_template="/GPFS/CENTRAL/xf17id2/jaishima/20210817_ophyd_bluesky/",
         root="/GPFS/CENTRAL/xf17id2",
     )
     image = Cpt(ImagePlugin, "image1:")

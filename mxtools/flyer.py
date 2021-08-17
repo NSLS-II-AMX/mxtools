@@ -7,6 +7,7 @@ from ophyd.sim import NullStatus
 from ophyd.status import SubscriptionStatus
 
 from .scans import setup_vector_program, setup_zebra_vector_scan, zebra_daq_prep
+from . import print_now
 
 
 class MXFlyer:
@@ -37,7 +38,7 @@ class MXFlyer:
             else:
                 return False
 
-        motion_status = SubscriptionStatus(self.vector.active, callback_motion)
+        motion_status = SubscriptionStatus(self.vector.active, callback_motion, run=False)
         return motion_status
 
     def describe_collect(self):
@@ -56,13 +57,17 @@ class MXFlyer:
         }
 
     def collect_asset_docs(self):
-        items = list(self._asset_docs_cache)
-        self._asset_docs_cache.clear()
+        # items = list(self._asset_docs_cache)
+        items = list(self.detector.file._asset_docs_cache)
+        print(f"{print_now()} items:\n{items}")
+        self.detector.file._asset_docs_cache.clear()
         for item in items:
             yield item
 
     def unstage(self):
+        ttime.sleep(1.0)
         self.detector.unstage()
+        self.detector.cam.acquire.put(0)
 
 
 def configure_flyer(
@@ -79,6 +84,7 @@ def configure_flyer(
     scanEncoder=3,
     changeState=True,
 ):  # scan encoder 0=x, 1=y,2=z,3=omega
+    yield from bps.mv(vector.sync, 1)
     yield from bps.mv(vector.expose, 1)
 
     if imgWidth == 0:
