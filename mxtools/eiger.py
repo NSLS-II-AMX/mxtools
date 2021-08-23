@@ -4,11 +4,19 @@ from pathlib import PurePath
 from types import SimpleNamespace
 
 from ophyd import Component as Cpt
-from ophyd import Device, EpicsPathSignal, EpicsSignal, EpicsSignalRO, ImagePlugin, Signal, SingleTrigger
+from ophyd import Device, EpicsPathSignal, EpicsSignal, ImagePlugin, Signal, SingleTrigger
 from ophyd.areadetector import EigerDetector
 from ophyd.areadetector.base import ADComponent, EpicsSignalWithRBV
-from ophyd.areadetector.filestore_mixins import FileStoreBase, new_short_uid
+from ophyd.areadetector.filestore_mixins import FileStoreBase  # , new_short_uid
 from ophyd.utils import set_and_wait
+
+from . import print_now
+
+# TODO: convert it to Enum class.
+INTERNAL_SERIES = 0
+INTERNAL_ENABLE = 1
+EXTERNAL_SERIES = 2
+EXTERNAL_ENABLE = 3
 
 
 class EigerSimulatedFilePlugin(Device, FileStoreBase):
@@ -18,6 +26,7 @@ class EigerSimulatedFilePlugin(Device, FileStoreBase):
     file_write_images_per_file = ADComponent(EpicsSignalWithRBV, "FWNImagesPerFile")
     current_run_start_uid = Cpt(Signal, value="", add_prefix=())
     enable = SimpleNamespace(get=lambda: True)
+    external_name = Cpt(Signal, value="")
 
     def __init__(self, *args, **kwargs):
         self.sequence_id_offset = 1
@@ -29,7 +38,8 @@ class EigerSimulatedFilePlugin(Device, FileStoreBase):
         self._datum_kwargs_map = dict()  # store kwargs for each uid
 
     def stage(self):
-        res_uid = new_short_uid()
+        print(f"{print_now()} staging detector {self.name}")
+        res_uid = self.external_name.get()
         write_path = datetime.datetime.now().strftime(self.write_path_template)
         set_and_wait(self.file_path, f"{write_path}/")
         set_and_wait(self.file_write_name_pattern, "{}_$id".format(res_uid))
@@ -40,6 +50,7 @@ class EigerSimulatedFilePlugin(Device, FileStoreBase):
         self._fn = fn
         res_kwargs = {"images_per_file": ipf}
         self._generate_resource(res_kwargs)
+        print(f"{print_now()} done staging detector {self.name}")
 
     def generate_datum(self, key, timestamp, datum_kwargs):
         # The detector keeps its own counter which is uses label HDF5
@@ -57,7 +68,7 @@ class EigerBaseV26(EigerDetector):
     file = Cpt(
         EigerSimulatedFilePlugin,
         suffix="cam1:",
-        write_path_template="/GPFS/CENTRAL/xf17id2/mfuchs/fmxoperator/20200222/mx999999-1665/",
+        write_path_template="/GPFS/CENTRAL/xf17id2/jaishima/20210817_ophyd_bluesky/",
         root="/GPFS/CENTRAL/xf17id2",
     )
     image = Cpt(ImagePlugin, "image1:")
@@ -69,18 +80,20 @@ class EigerBaseV26(EigerDetector):
         # before parent
         ret = super().stage(*args, **kwargs)
         # after parent
-        set_and_wait(self.cam.manual_trigger, 1)
+        # set_and_wait(self.cam.manual_trigger, 1)
         return ret
 
     def unstage(self):
-        set_and_wait(self.cam.manual_trigger, 0)
+        # set_and_wait(self.cam.manual_trigger, 0)
         super().unstage()
 
 
 class EigerSingleTriggerV26(SingleTrigger, EigerBaseV26):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.stage_sigs["cam.trigger_mode"] = 0
+        # self.stage_sigs["cam.trigger_mode"] = 0 #original: single manual trigger
+        self.stage_sigs["cam.trigger_mode"] = EXTERNAL_SERIES
+        self.stage_sigs.pop("cam.acquire")  # remove acquire=0
         # self.stage_sigs['shutter_mode'] = 1  # 'EPICS PV'
         self.stage_sigs.update({"cam.num_triggers": 1, "cam.compression_algo": "BS LZ4"})
 
@@ -94,16 +107,16 @@ class EigerSingleTriggerV26(SingleTrigger, EigerBaseV26):
 
     def read(self, *args, streaming=False, **kwargs):
         """
-            This is a test of using streaming read.
-            Ideally, this should be handled by a new _stream_attrs property.
-            For now, we just check for a streaming key in read and
-            call super() if False, or read the one key we know we should read
-            if True.
+        This is a test of using streaming read.
+        Ideally, this should be handled by a new _stream_attrs property.
+        For now, we just check for a streaming key in read and
+        call super() if False, or read the one key we know we should read
+        if True.
 
-            Parameters
-            ----------
-            streaming : bool, optional
-                whether to read streaming attrs or not
+        Parameters
+        ----------
+        streaming : bool, optional
+            whether to read streaming attrs or not
         """
         if streaming:
             key = self._image_name  # this comes from the SingleTrigger mixin
@@ -116,16 +129,16 @@ class EigerSingleTriggerV26(SingleTrigger, EigerBaseV26):
 
     def describe(self, *args, streaming=False, **kwargs):
         """
-            This is a test of using streaming read.
-            Ideally, this should be handled by a new _stream_attrs property.
-            For now, we just check for a streaming key in read and
-            call super() if False, or read the one key we know we should read
-            if True.
+        This is a test of using streaming read.
+        Ideally, this should be handled by a new _stream_attrs property.
+        For now, we just check for a streaming key in read and
+        call super() if False, or read the one key we know we should read
+        if True.
 
-            Parameters
-            ----------
-            streaming : bool, optional
-                whether to read streaming attrs or not
+        Parameters
+        ----------
+        streaming : bool, optional
+            whether to read streaming attrs or not
         """
         if streaming:
             key = self._image_name  # this comes from the SingleTrigger mixin

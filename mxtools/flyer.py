@@ -7,6 +7,7 @@ from ophyd.sim import NullStatus
 from ophyd.status import SubscriptionStatus
 
 from .scans import setup_vector_program, setup_zebra_vector_scan, zebra_daq_prep
+from . import print_now
 
 
 class MXFlyer:
@@ -24,7 +25,7 @@ class MXFlyer:
         self._collection_dictionary = None
 
     def kickoff(self):
-
+        self.detector.stage()
         self.vector.go.put(1)
 
         return NullStatus()
@@ -37,7 +38,7 @@ class MXFlyer:
             else:
                 return False
 
-        motion_status = SubscriptionStatus(self.vector.active, callback_motion)
+        motion_status = SubscriptionStatus(self.vector.active, callback_motion, run=False)
         return motion_status
 
     def describe_collect(self):
@@ -56,18 +57,23 @@ class MXFlyer:
         }
 
     def collect_asset_docs(self):
-        items = list(self._asset_docs_cache)
-        self._asset_docs_cache.clear()
+        # items = list(self._asset_docs_cache)
+        items = list(self.detector.file._asset_docs_cache)
+        print(f"{print_now()} items:\n{items}")
+        self.detector.file._asset_docs_cache.clear()
         for item in items:
             yield item
 
     def unstage(self):
-        ...
+        ttime.sleep(1.0)
+        self.detector.unstage()
+        self.detector.cam.acquire.put(0)
 
 
 def configure_flyer(
     vector,
     zebra,
+    eiger_single,
     angle_start,
     scanWidth,
     imgWidth,
@@ -78,6 +84,7 @@ def configure_flyer(
     scanEncoder=3,
     changeState=True,
 ):  # scan encoder 0=x, 1=y,2=z,3=omega
+    yield from bps.mv(vector.sync, 1)
     yield from bps.mv(vector.expose, 1)
 
     if imgWidth == 0:
@@ -92,7 +99,7 @@ def configure_flyer(
     else:
         yield from bps.mv(vector.buffer_time, 3)
         pass
-    detector_dead_time = 0.001  # TODO get real dead time from detector object
+    detector_dead_time = eiger_single.cam.dead_time.get()
     yield from setup_vector_program(
         vector=vector,
         num_images=numImages,
@@ -123,9 +130,21 @@ def configure_nyx_flyer():
     ...
 
 
-def actual_scan(mx_flyer, vector, zebra, angle_start, scanWidth, imgWidth, exposurePeriodPerImage):
+def actual_scan(mx_flyer, eiger, vector, zebra, angle_start, scanWidth, imgWidth, exposurePeriodPerImage):
+    file_prefix = "abc"
+    data_directory_name = "def"
+    yield from bps.mv(eiger.file.external_name, "prefix_name")
     yield from configure_flyer(
-        vector, zebra, angle_start, scanWidth, imgWidth, exposurePeriodPerImage, "abc", "abc", 1,
+        vector,
+        zebra,
+        eiger,
+        angle_start,
+        scanWidth,
+        imgWidth,
+        exposurePeriodPerImage,
+        file_prefix,
+        data_directory_name,
+        1,
     )
     yield from bp.fly([mx_flyer])
 

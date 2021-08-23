@@ -6,15 +6,19 @@ import time
 
 import bluesky.plan_stubs as bps
 
+from mxtools.eiger import EXTERNAL_SERIES
+
 logger = logging.getLogger(__name__)
 
 
 def zebra_daq_prep(zebra):
     yield from bps.mv(zebra.reset, 1)
     yield from bps.sleep(2.0)
-    yield from bps.mv(
-        zebra.out1, 31, zebra.m1_set_pos, 1, zebra.m2_set_pos, 1, zebra.m3_set_pos, 1, zebra.pc.arm_sel, 1,
-    )
+    yield from bps.mv(zebra.out1, 31)
+    yield from bps.mv(zebra.m1_set_pos, 1)
+    yield from bps.mv(zebra.m2_set_pos, 1)
+    yield from bps.mv(zebra.m3_set_pos, 1)
+    yield from bps.mv(zebra.pc.arm.trig_source, 1)
 
 
 def setup_zebra_vector_scan(
@@ -28,23 +32,15 @@ def setup_zebra_vector_scan(
     num_images,
     is_still=False,
 ):
-    yield from bps.mv(zebra.pc.gate.sel, angle_start)
+    yield from bps.mv(zebra.pc.gate.start, angle_start)
     if is_still is False:
         yield from bps.mv(zebra.pc.gate.width, gate_width, zebra.pc.gate.step, scan_width)
-    yield from bps.mv(
-        zebra.pc.gate.num_gates,
-        1,
-        zebra.pc.pulse.start,
-        0,
-        zebra.pc.pulse.width,
-        pulse_width,
-        zebra.pc.pulse.step,
-        pulse_step,
-        zebra.pc.pulse.delay,
-        exposure_period_per_image / 2 * 1000,
-        zebra.pc.pulse.max,
-        num_images,
-    )
+    yield from bps.mv(zebra.pc.gate.num_gates, 1)
+    yield from bps.mv(zebra.pc.pulse.start, 0)
+    yield from bps.mv(zebra.pc.pulse.width, pulse_width)
+    yield from bps.mv(zebra.pc.pulse.step, pulse_step)
+    yield from bps.mv(zebra.pc.pulse.delay, exposure_period_per_image / 2 * 1000)
+    yield from bps.mv(zebra.pc.pulse.max, num_images)
 
 
 def setup_zebra_vector_scan_for_raster(
@@ -63,7 +59,10 @@ def setup_zebra_vector_scan_for_raster(
     yield from bps.mv(zebra.pc.gate.start, angle_start)
     if image_width != 0:
         yield from bps.mv(
-            zebra.pc.gate.width, num_images * image_width, zebra.pc.gate.step, num_images * image_width + 0.01,
+            zebra.pc.gate.width,
+            num_images * image_width,
+            zebra.pc.gate.step,
+            num_images * image_width + 0.01,
         )
     yield from bps.mv(
         zebra.pc.gate.num_gates,
@@ -91,9 +90,8 @@ def setup_vector_program(vector, num_images, angle_start, angle_end, exposure_pe
         angle_end,
         vector.frame_exptime,
         exposure_period_per_image * 1000.0,
-        vector.hold,
-        0,
     )
+    yield from bps.mv(vector.hold, 0)
 
 
 def setup_eiger_exposure(eiger, exposure_time, exposure_period):
@@ -121,6 +119,8 @@ def setup_eiger_arming(
     wavelength,
     det_distance_m,
 ):
+    yield from bps.mv(eiger.cam.trigger_mode, EXTERNAL_SERIES)
+
     yield from bps.mv(eiger.cam.save_files, 1)
     yield from bps.mv(eiger.cam.file_owner, getpass.getuser())
     yield from bps.mv(eiger.cam.file_owner_grp, grp.getgrgid(os.getgid())[0])
@@ -133,7 +133,10 @@ def setup_eiger_arming(
     yield from bps.mv(eiger.cam.num_images, num_images)
     yield from bps.mv(eiger.cam.file_path, data_directory_name)
     yield from bps.mv(eiger.cam.fw_name_pattern, f"{file_prefix_minus_directory}_$id")
-    yield from bps.mv(eiger.cam.sequence_id, file_number_start)
+
+    # TODO: change it back to eiger.cam.sequence_id once the ophyd PR
+    # https://github.com/bluesky/ophyd/pull/1001 is merged/released.
+    yield from bps.mv(eiger.file.sequence_id, file_number_start)
 
     # originally from detector_set_fileheader
     yield from bps.mv(eiger.cam.beam_center_x, x_beam)
@@ -151,3 +154,10 @@ def setup_eiger_arming(
 def setup_eiger_stop_acquire_and_wait(eiger):
     yield from bps.mv(eiger.cam.acquire, 0)
     # wait until Acquire_RBV is 0
+
+
+# use it as follows:
+# RE(setup_eiger_arming(eiger_single, 0, 100, 10, 0.01, 'test20210729',\
+#    '/GPFS/CENTRAL/xf17id2/mfuchs/fmxoperator/20200222/mx999999-1665/', 2851, 2002.125, 2245.850, 0.9793, 0.250))
+# RE(actual_scan(mx_flyer, eiger_single, vector, zebra, 0, 100, 0.2, 0.01))
+# and it should all work - but doesn't at the moment (Eiger not getting triggered)
