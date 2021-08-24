@@ -1,6 +1,6 @@
 import time as ttime
 from collections import deque
-import math
+# import math
 
 from bluesky import plan_stubs as bps
 from bluesky import plans as bp
@@ -8,7 +8,7 @@ from ophyd.sim import NullStatus
 from ophyd.status import SubscriptionStatus
 
 from .scans import setup_vector_program, setup_zebra_vector_scan, zebra_daq_prep
-from . import print_now
+# from . import print_now
 
 
 class MXFlyer:
@@ -46,11 +46,11 @@ class MXFlyer:
         return_dict = {}
         return_dict['primary'] = \
             {f'{self.detector.name}_image': {'source': f'{self.detector.name}',
-                                              'dtype': 'array',
-                                              'shape': [self.detector.cam.num_images.get(),
-                                                        self.detector.cam.array_size.array_size_x.get(),
-                                                        self.detector.cam.array_size.array_size_y.get()],
-                                              'external': 'FILESTORE:'}}
+                                             'dtype': 'array',
+                                             'shape': [self.detector.cam.num_images.get(),
+                                                       self.detector.cam.array_size.array_size_x.get(),
+                                                       self.detector.cam.array_size.array_size_y.get()],
+                                             'external': 'FILESTORE:'}}
         return return_dict
 
     def collect(self):
@@ -84,8 +84,8 @@ class MXFlyer:
         # Generate Datum documents from scratch here, because the detector was
         # triggered externally by the DeltaTau, never by ophyd.
         resource_uid = resource['uid']
-        num_points = int(math.ceil(self.detector.cam.num_images.get() /
-                         self.detector.cam.fw_num_images_per_file.get()))
+        # num_points = int(math.ceil(self.detector.cam.num_images.get() /
+        #                 self.detector.cam.fw_num_images_per_file.get()))
 
         # We are currently generating only one datum document for all frames, that's why
         #   we use the 0th index below.
