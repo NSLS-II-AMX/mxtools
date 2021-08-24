@@ -1,5 +1,6 @@
 import time as ttime
 from collections import deque
+
 # import math
 
 from bluesky import plan_stubs as bps
@@ -8,6 +9,7 @@ from ophyd.sim import NullStatus
 from ophyd.status import SubscriptionStatus
 
 from .scans import setup_vector_program, setup_zebra_vector_scan, zebra_daq_prep
+
 # from . import print_now
 
 
@@ -44,20 +46,25 @@ class MXFlyer:
 
     def describe_collect(self):
         return_dict = {}
-        return_dict['primary'] = \
-            {f'{self.detector.name}_image': {'source': f'{self.detector.name}',
-                                             'dtype': 'array',
-                                             'shape': [self.detector.cam.num_images.get(),
-                                                       self.detector.cam.array_size.array_size_x.get(),
-                                                       self.detector.cam.array_size.array_size_y.get()],
-                                             'external': 'FILESTORE:'}}
+        return_dict["primary"] = {
+            f"{self.detector.name}_image": {
+                "source": f"{self.detector.name}",
+                "dtype": "array",
+                "shape": [
+                    self.detector.cam.num_images.get(),
+                    self.detector.cam.array_size.array_size_x.get(),
+                    self.detector.cam.array_size.array_size_y.get(),
+                ],
+                "external": "FILESTORE:",
+            }
+        }
         return return_dict
 
     def collect(self):
         self.unstage()
 
         now = ttime.time()
-        data = {f'{self.detector.name}_image': self._datum_ids[0]}
+        data = {f"{self.detector.name}_image": self._datum_ids[0]}
         yield {
             "data": data,
             "timestamps": {key: now for key in data},
@@ -77,13 +84,13 @@ class MXFlyer:
         asset_docs_cache = []
 
         # Get the Resource which was produced when the detector was staged.
-        (name, resource), = self.detector.file.collect_asset_docs()
+        ((name, resource),) = self.detector.file.collect_asset_docs()
 
-        asset_docs_cache.append(('resource', resource))
+        asset_docs_cache.append(("resource", resource))
         self._datum_ids.clear()
         # Generate Datum documents from scratch here, because the detector was
         # triggered externally by the DeltaTau, never by ophyd.
-        resource_uid = resource['uid']
+        resource_uid = resource["uid"]
         # num_points = int(math.ceil(self.detector.cam.num_images.get() /
         #                 self.detector.cam.fw_num_images_per_file.get()))
 
@@ -94,12 +101,14 @@ class MXFlyer:
         # for i in range(num_points):
 
         for i in [0]:
-            datum_id = '{}/{}'.format(resource_uid, i)
+            datum_id = "{}/{}".format(resource_uid, i)
             self._datum_ids.append(datum_id)
-            datum = {'resource': resource_uid,
-                     'datum_id': datum_id,
-                     'datum_kwargs': {'seq_id': self.detector.cam.sequence_id.get()}}
-            asset_docs_cache.append(('datum', datum))
+            datum = {
+                "resource": resource_uid,
+                "datum_id": datum_id,
+                "datum_kwargs": {"seq_id": self.detector.cam.sequence_id.get()},
+            }
+            asset_docs_cache.append(("datum", datum))
         return tuple(asset_docs_cache)
 
     def unstage(self):
@@ -171,8 +180,18 @@ def configure_nyx_flyer():
     ...
 
 
-def actual_scan(mx_flyer, eiger, vector, zebra, angle_start, scanWidth, imgWidth, exposurePeriodPerImage,
-                file_prefix, data_directory_name):
+def actual_scan(
+    mx_flyer,
+    eiger,
+    vector,
+    zebra,
+    angle_start,
+    scanWidth,
+    imgWidth,
+    exposurePeriodPerImage,
+    file_prefix,
+    data_directory_name,
+):
     # file_prefix = "abc"
     # data_directory_name = "def"
     yield from bps.mv(eiger.file.external_name, file_prefix)
