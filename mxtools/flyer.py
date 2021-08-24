@@ -1,5 +1,6 @@
 import time as ttime
 from collections import deque
+import math
 
 from bluesky import plan_stubs as bps
 from bluesky import plans as bp
@@ -42,13 +43,21 @@ class MXFlyer:
         return motion_status
 
     def describe_collect(self):
-        return {self.name: {}}
+        return_dict = {}
+        return_dict['primary'] = \
+            {f'{self.detector.name}_image': {'source': f'{self.detector.name}',
+                                              'dtype': 'array',
+                                              'shape': [self.detector.cam.num_images.get(),
+                                                        self.detector.cam.array_size.array_size_x.get(),
+                                                        self.detector.cam.array_size.array_size_y.get()],
+                                              'external': 'FILESTORE:'}}
+        return return_dict
 
     def collect(self):
         self.unstage()
 
         now = ttime.time()
-        data = {}
+        data = {f'{self.detector.name}_image': self._datum_ids[0]}
         yield {
             "data": data,
             "timestamps": {key: now for key in data},
@@ -56,13 +65,42 @@ class MXFlyer:
             "filled": {key: False for key in data},
         }
 
+    # def collect_asset_docs(self):
+    #     # items = list(self._asset_docs_cache)
+    #     items = list(self.detector.file._asset_docs_cache)
+    #     print(f"{print_now()} items:\n{items}")
+    #     self.detector.file._asset_docs_cache.clear()
+    #     for item in items:
+    #         yield item
+
     def collect_asset_docs(self):
-        # items = list(self._asset_docs_cache)
-        items = list(self.detector.file._asset_docs_cache)
-        print(f"{print_now()} items:\n{items}")
-        self.detector.file._asset_docs_cache.clear()
-        for item in items:
-            yield item
+        asset_docs_cache = []
+
+        # Get the Resource which was produced when the detector was staged.
+        (name, resource), = self.detector.file.collect_asset_docs()
+
+        asset_docs_cache.append(('resource', resource))
+        self._datum_ids.clear()
+        # Generate Datum documents from scratch here, because the detector was
+        # triggered externally by the DeltaTau, never by ophyd.
+        resource_uid = resource['uid']
+        num_points = int(math.ceil(self.detector.cam.num_images.get() /
+                         self.detector.cam.fw_num_images_per_file.get()))
+
+        # We are currently generating only one datum document for all frames, that's why
+        #   we use the 0th index below.
+        #
+        # Uncomment & update the line below if more datum documents are needed:
+        # for i in range(num_points):
+
+        for i in [0]:
+            datum_id = '{}/{}'.format(resource_uid, i)
+            self._datum_ids.append(datum_id)
+            datum = {'resource': resource_uid,
+                     'datum_id': datum_id,
+                     'datum_kwargs': {'seq_id': self.detector.cam.sequence_id.get()}}
+            asset_docs_cache.append(('datum', datum))
+        return tuple(asset_docs_cache)
 
     def unstage(self):
         ttime.sleep(1.0)
@@ -84,6 +122,9 @@ def configure_flyer(
     scanEncoder=3,
     changeState=True,
 ):  # scan encoder 0=x, 1=y,2=z,3=omega
+
+    eiger_single.file.write_path_template = data_directory_name
+
     yield from bps.mv(vector.sync, 1)
     yield from bps.mv(vector.expose, 1)
 
@@ -130,10 +171,11 @@ def configure_nyx_flyer():
     ...
 
 
-def actual_scan(mx_flyer, eiger, vector, zebra, angle_start, scanWidth, imgWidth, exposurePeriodPerImage):
-    file_prefix = "abc"
-    data_directory_name = "def"
-    yield from bps.mv(eiger.file.external_name, "prefix_name")
+def actual_scan(mx_flyer, eiger, vector, zebra, angle_start, scanWidth, imgWidth, exposurePeriodPerImage,
+                file_prefix, data_directory_name):
+    # file_prefix = "abc"
+    # data_directory_name = "def"
+    yield from bps.mv(eiger.file.external_name, file_prefix)
     yield from configure_flyer(
         vector,
         zebra,
