@@ -2,4 +2,4 @@
 
 set -vxeuo pipefail
 
-isort . --line-length=115
+isort --line-length=115 . ${1:-}
