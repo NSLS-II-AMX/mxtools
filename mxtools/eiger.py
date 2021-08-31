@@ -68,7 +68,7 @@ class EigerBaseV26(EigerDetector):
     file = Cpt(
         EigerSimulatedFilePlugin,
         suffix="cam1:",
-        write_path_template="/GPFS/CENTRAL/xf17id2/jaishima/20210817_ophyd_bluesky/",
+        write_path_template="/GPFS/CENTRAL/xf17id2/jaishima/",
         root="/GPFS/CENTRAL/xf17id2",
     )
     image = Cpt(ImagePlugin, "image1:")
