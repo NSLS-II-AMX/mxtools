@@ -1,4 +1,4 @@
-name: Check Code Style - BLACK
+name: Check Code Style - ISORT
 
 on: [push, pull_request]
 
@@ -15,7 +15,7 @@ jobs:
           # installation problems if out of date.
           python -m pip install --upgrade pip setuptools numpy
 
-          pip install black
-      - name: Run black
+          pip install isort
+      - name: Run isort
         run: |
-          bash ./scripts/black.sh --check
+          bash ./scripts/isort.sh --check

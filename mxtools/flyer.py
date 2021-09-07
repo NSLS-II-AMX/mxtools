@@ -1,16 +1,14 @@
+import os
 import time as ttime
 from collections import deque
 
-# import math
-
+import h5py
 from bluesky import plan_stubs as bps
 from bluesky import plans as bp
 from ophyd.sim import NullStatus
 from ophyd.status import SubscriptionStatus
 
 from .scans import setup_vector_program, setup_zebra_vector_scan, zebra_daq_prep
-
-# from . import print_now
 
 
 class MXFlyer:
@@ -24,6 +22,8 @@ class MXFlyer:
         self._resource_uids = []
         self._datum_counter = None
         self._datum_ids = []
+        self._master_file = None
+        self._master_metadata = []
 
         self._collection_dictionary = None
 
@@ -56,7 +56,12 @@ class MXFlyer:
                     self.detector.cam.array_size.array_size_y.get(),
                 ],
                 "external": "FILESTORE:",
-            }
+            },
+            "omega": {
+                "source": "read-from-AD-file",
+                "dtype": "array",
+                "shape": [self.detector.cam.num_images.get()],
+            },
         }
         return return_dict
 
@@ -64,7 +69,8 @@ class MXFlyer:
         self.unstage()
 
         now = ttime.time()
-        data = {f"{self.detector.name}_image": self._datum_ids[0]}
+        self._master_metadata = self._extract_metadata()
+        data = {f"{self.detector.name}_image": self._datum_ids[0], "omega": self._master_metadata}
         yield {
             "data": data,
             "timestamps": {key: now for key in data},
@@ -81,6 +87,7 @@ class MXFlyer:
     #         yield item
 
     def collect_asset_docs(self):
+
         asset_docs_cache = []
 
         # Get the Resource which was produced when the detector was staged.
@@ -100,16 +107,26 @@ class MXFlyer:
         # Uncomment & update the line below if more datum documents are needed:
         # for i in range(num_points):
 
+        seq_id = self.detector.cam.sequence_id.get()
+
+        self._master_file = f"{resource['root']}/{resource['resource_path']}_{seq_id}_master.h5"
+        if not os.path.isfile(self._master_file):
+            raise RuntimeError(f"File {self._master_file} does not exist")
+
         for i in [0]:
             datum_id = "{}/{}".format(resource_uid, i)
             self._datum_ids.append(datum_id)
             datum = {
                 "resource": resource_uid,
                 "datum_id": datum_id,
-                "datum_kwargs": {"seq_id": self.detector.cam.sequence_id.get()},
+                "datum_kwargs": {"seq_id": seq_id},
             }
             asset_docs_cache.append(("datum", datum))
         return tuple(asset_docs_cache)
+
+    def _extract_metadata(self, field="omega"):
+        with h5py.File(self._master_file, "r") as hf:
+            return hf.get(f"entry/sample/goniometer/{field}")[()]
 
     def unstage(self):
         ttime.sleep(1.0)
