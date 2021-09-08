@@ -1,6 +1,7 @@
 import pathlib
-import h5py
+
 import dask.array as da
+import h5py
 from area_detector_handlers import HandlerBase
 
 
@@ -9,7 +10,7 @@ class EigerHandlerMX(HandlerBase):
 
     def __init__(self, fpath, seq_id):
         self._seq_id = seq_id
-        # From https://github.com/bluesky/area-detector-handlers/blob/0f47155b31a6b4bf92c1c2b6fe98b5f141194c78/area_detector_handlers/eiger.py#L84
+        # From https://github.com/bluesky/area-detector-handlers/blob/0f47155b31a6b4bf92c1c2b6fe98b5f141194c78/area_detector_handlers/eiger.py#L84  # noqa
         #
         #         master_path = Path(f'{self._file_prefix}_{seq_id}_master.h5').absolute()
         #

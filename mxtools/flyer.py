@@ -12,6 +12,7 @@ from .scans import setup_vector_program, setup_zebra_vector_scan, zebra_daq_prep
 
 DEFAULT_DATUM_DICT = {"data": None, "omega": None}
 
+
 class MXFlyer:
     def __init__(self, vector, zebra, eiger=None) -> None:
         self.name = "MXFlyer"
@@ -72,8 +73,7 @@ class MXFlyer:
 
         now = ttime.time()
         self._master_metadata = self._extract_metadata()
-        data = {f"{self.detector.name}_image": self._datum_ids["data"],
-                "omega": self._datum_ids["omega"]}
+        data = {f"{self.detector.name}_image": self._datum_ids["data"], "omega": self._datum_ids["omega"]}
         yield {
             "data": data,
             "timestamps": {key: now for key in data},
