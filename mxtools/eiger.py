@@ -32,7 +32,7 @@ class EigerSimulatedFilePlugin(Device, FileStoreBase):
         self.sequence_id_offset = 1
         # This is changed for when a datum is a slice
         # also used by ophyd
-        self.filestore_spec = "AD_EIGER2"
+        self.filestore_spec = "AD_EIGER_MX"
         self.frame_num = None
         super().__init__(*args, **kwargs)
         self._datum_kwargs_map = dict()  # store kwargs for each uid
@@ -48,7 +48,9 @@ class EigerSimulatedFilePlugin(Device, FileStoreBase):
         ipf = int(self.file_write_images_per_file.get())
         # logger.debug("Inserting resource with filename %s", fn)
         self._fn = fn
-        res_kwargs = {"images_per_file": ipf}
+        # res_kwargs = {"images_per_file": ipf}
+        seq_id = int(self.sequence_id.get())  # det writes to the NEXT one
+        res_kwargs = {"seq_id": seq_id}
         self._generate_resource(res_kwargs)
         print(f"{print_now()} done staging detector {self.name}")
 
@@ -56,8 +58,7 @@ class EigerSimulatedFilePlugin(Device, FileStoreBase):
         # The detector keeps its own counter which is uses label HDF5
         # sub-files.  We access that counter via the sequence_id
         # signal and stash it in the datum.
-        seq_id = int(self.sequence_id_offset) + int(self.sequence_id.get())  # det writes to the NEXT one
-        datum_kwargs.update({"seq_id": seq_id})
+        # datum_kwargs.update({})
         if self.frame_num is not None:
             datum_kwargs.update({"frame_num": self.frame_num})
         return super().generate_datum(key, timestamp, datum_kwargs)
