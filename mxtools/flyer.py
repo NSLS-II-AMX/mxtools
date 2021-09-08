@@ -29,6 +29,12 @@ class MXFlyer:
 
         self._collection_dictionary = None
 
+    def read_configuration(self):
+        return {}
+
+    def describe_configuration(self):
+        return {}
+
     def kickoff(self):
         self.detector.stage()
         self.vector.go.put(1)
