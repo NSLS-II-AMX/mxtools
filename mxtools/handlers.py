@@ -4,6 +4,7 @@ import logging
 import dask.array as da
 import h5py
 from area_detector_handlers import HandlerBase
+
 logger = logging.getLogger(__name__)
 
 
@@ -37,7 +38,6 @@ class EigerHandlerMX(HandlerBase):
             newret = ret.reshape(-1, *ret.shape[-2:])
             logger.debug(f"{newret.shape}")
             return newret
-
 
         elif data_key == "omega":
             return da.from_array(self._file["entry"]["sample"]["goniometer"][data_key])
