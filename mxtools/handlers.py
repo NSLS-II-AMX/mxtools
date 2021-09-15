@@ -1,8 +1,10 @@
 import pathlib
+import logging
 
 import dask.array as da
 import h5py
 from area_detector_handlers import HandlerBase
+logger = logging.getLogger(__name__)
 
 
 class EigerHandlerMX(HandlerBase):
@@ -26,10 +28,16 @@ class EigerHandlerMX(HandlerBase):
         if data_key == "data":
             temp = []
             group = self._file["entry"]["data"]
-            for k in group:
-                temp.append(da.from_array(group[k]))
+            for i, k in enumerate(group):
+                reta = da.from_array(group[k])
+                logger.debug(f"{i} {reta.shape}")
+                temp.append(reta)
 
-            return da.stack(temp)
+            ret = da.stack(temp)
+            newret = ret.reshape(-1, *ret.shape[-2:])
+            logger.debug(f"{newret.shape}")
+            return newret
+
 
         elif data_key == "omega":
             return da.from_array(self._file["entry"]["sample"]["goniometer"][data_key])
