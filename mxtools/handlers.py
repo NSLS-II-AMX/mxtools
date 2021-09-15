@@ -1,5 +1,5 @@
-import pathlib
 import logging
+import pathlib
 
 import dask.array as da
 import h5py
