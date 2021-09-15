@@ -60,15 +60,17 @@ class MXFlyer:
                 "dtype": "array",
                 "shape": [
                     self.detector.cam.num_images.get(),
-                    self.detector.cam.array_size.array_size_x.get(),
                     self.detector.cam.array_size.array_size_y.get(),
+                    self.detector.cam.array_size.array_size_x.get(),
                 ],
+                "dims": ["images", "row", "column"],
                 "external": "FILESTORE:",
             },
             "omega": {
                 "source": f"{self.detector.name}_omega",
                 "dtype": "array",
                 "shape": [self.detector.cam.num_images.get()],
+                "dims": ["images"],
                 "external": "FILESTORE:",
             },
         }
