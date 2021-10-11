@@ -21,7 +21,7 @@ class EigerHandlerMX(HandlerBase):
         if not self._fpath.is_file():
             raise RuntimeError(f"File {self._fpath} does not exist")
 
-        # print(f"Eiger master file: {self._fpath}")
+        # print(f"Eiger master file: {self._fpath}")  # TODO make this a logging debug message
 
     def __call__(self, data_key="data", **kwargs):
         self._file = h5py.File(self._fpath, "r")  # but make it cached
@@ -52,25 +52,3 @@ class EigerHandlerMX(HandlerBase):
 
         else:
             raise RuntimeError("Unknown key")
-
-
-# resource = {
-#     "resource_id": "RES",
-#     "resource_kwargs": {},  # this goes to __init__
-#     "spec": "AD-EIGER-MX",
-#     ...: ...,
-# }
-# datum = {
-#     "datum_id": "a",
-#     "datum_kwargs": {"data_key": "data"},  # this goes to __call__
-#     "resource": "RES",
-#     ...: ...,
-# }
-# datum = {
-#     "datum_id": "b",
-#     "datum_kwargs": {"data_key": "omega"},
-#     "resource": "RES",
-#     ...: ...,
-# }
-
-# event = {...: ..., "data": {"eiger_img": "a", "omega": "b"}}
