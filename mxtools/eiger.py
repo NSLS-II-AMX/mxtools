@@ -58,7 +58,6 @@ class EigerSimulatedFilePlugin(Device, FileStoreBase):
         # The detector keeps its own counter which is uses label HDF5
         # sub-files.  We access that counter via the sequence_id
         # signal and stash it in the datum.
-        # datum_kwargs.update({})
         if self.frame_num is not None:
             datum_kwargs.update({"frame_num": self.frame_num})
         return super().generate_datum(key, timestamp, datum_kwargs)
