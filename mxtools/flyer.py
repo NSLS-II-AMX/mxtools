@@ -124,6 +124,8 @@ class MXFlyer:
         if not os.path.isfile(self._master_file):
             raise RuntimeError(f"File {self._master_file} does not exist")
 
+        # The pseudocode below is from Tom Caswell explaining the relationship between resource, datum, and events.
+        #
         # resource = {
         #     "resource_id": "RES",
         #     "resource_kwargs": {},  # this goes to __init__
