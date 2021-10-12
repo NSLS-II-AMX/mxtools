@@ -10,6 +10,8 @@ from ophyd.status import SubscriptionStatus
 
 from .scans import setup_vector_program, setup_zebra_vector_scan, zebra_daq_prep
 
+DEFAULT_DATUM_DICT = {"data": None, "omega": None}
+
 
 class MXFlyer:
     def __init__(self, vector, zebra, eiger=None) -> None:
@@ -21,11 +23,17 @@ class MXFlyer:
         self._asset_docs_cache = deque()
         self._resource_uids = []
         self._datum_counter = None
-        self._datum_ids = []
+        self._datum_ids = DEFAULT_DATUM_DICT
         self._master_file = None
         self._master_metadata = []
 
         self._collection_dictionary = None
+
+    def read_configuration(self):
+        return {}
+
+    def describe_configuration(self):
+        return {}
 
     def kickoff(self):
         self.detector.stage()
@@ -48,19 +56,22 @@ class MXFlyer:
         return_dict = {}
         return_dict["primary"] = {
             f"{self.detector.name}_image": {
-                "source": f"{self.detector.name}",
+                "source": f"{self.detector.name}_data",
                 "dtype": "array",
                 "shape": [
                     self.detector.cam.num_images.get(),
-                    self.detector.cam.array_size.array_size_x.get(),
                     self.detector.cam.array_size.array_size_y.get(),
+                    self.detector.cam.array_size.array_size_x.get(),
                 ],
+                "dims": ["images", "row", "column"],
                 "external": "FILESTORE:",
             },
             "omega": {
-                "source": "read-from-AD-file",
+                "source": f"{self.detector.name}_omega",
                 "dtype": "array",
                 "shape": [self.detector.cam.num_images.get()],
+                "dims": ["images"],
+                "external": "FILESTORE:",
             },
         }
         return return_dict
@@ -70,7 +81,7 @@ class MXFlyer:
 
         now = ttime.time()
         self._master_metadata = self._extract_metadata()
-        data = {f"{self.detector.name}_image": self._datum_ids[0], "omega": self._master_metadata}
+        data = {f"{self.detector.name}_image": self._datum_ids["data"], "omega": self._datum_ids["omega"]}
         yield {
             "data": data,
             "timestamps": {key: now for key in data},
@@ -94,7 +105,7 @@ class MXFlyer:
         ((name, resource),) = self.detector.file.collect_asset_docs()
 
         asset_docs_cache.append(("resource", resource))
-        self._datum_ids.clear()
+        self._datum_ids = DEFAULT_DATUM_DICT
         # Generate Datum documents from scratch here, because the detector was
         # triggered externally by the DeltaTau, never by ophyd.
         resource_uid = resource["uid"]
@@ -113,13 +124,36 @@ class MXFlyer:
         if not os.path.isfile(self._master_file):
             raise RuntimeError(f"File {self._master_file} does not exist")
 
-        for i in [0]:
-            datum_id = "{}/{}".format(resource_uid, i)
-            self._datum_ids.append(datum_id)
+        # The pseudocode below is from Tom Caswell explaining the relationship between resource, datum, and events.
+        #
+        # resource = {
+        #     "resource_id": "RES",
+        #     "resource_kwargs": {},  # this goes to __init__
+        #     "spec": "AD-EIGER-MX",
+        #     ...: ...,
+        # }
+        # datum = {
+        #     "datum_id": "a",
+        #     "datum_kwargs": {"data_key": "data"},  # this goes to __call__
+        #     "resource": "RES",
+        #     ...: ...,
+        # }
+        # datum = {
+        #     "datum_id": "b",
+        #     "datum_kwargs": {"data_key": "omega"},
+        #     "resource": "RES",
+        #     ...: ...,
+        # }
+
+        # event = {...: ..., "data": {"eiger_img": "a", "omega": "b"}}
+
+        for data_key in self._datum_ids.keys():
+            datum_id = f"{resource_uid}/{data_key}"
+            self._datum_ids[data_key] = datum_id
             datum = {
                 "resource": resource_uid,
                 "datum_id": datum_id,
-                "datum_kwargs": {"seq_id": seq_id},
+                "datum_kwargs": {"data_key": data_key},
             }
             asset_docs_cache.append(("datum", datum))
         return tuple(asset_docs_cache)
