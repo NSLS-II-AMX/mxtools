@@ -51,4 +51,4 @@ class EigerHandlerMX(HandlerBase):
             return da.from_array(self._file["entry"]["instrument"][data_key])
 
         else:
-            raise RuntimeError("Unknown key")
+            raise RuntimeError(f"Unknown key: {data_key}")
