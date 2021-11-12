@@ -168,6 +168,15 @@ class MXFlyer:
         self.detector.cam.acquire.put(0)
 
 
+def configure_detector(
+    detector,
+    file_prefix,
+    data_directory_name
+):
+    yield from bps.mv(detector.file.external_name, file_prefix)
+    detector.file.write_path_template = data_directory_name
+ 
+
 def configure_vector(
     vector,
     angle_start,
@@ -243,8 +252,11 @@ def actual_scan(
     # file_prefix = "abc"
     # data_directory_name = "def"
 
-    yield from bps.mv(detector.file.external_name, file_prefix)
-    detector.file.write_path_template = data_directory_name
+    yield from configure_detector(
+        detector,
+        file_prefix,
+        data_directory_name
+    )
     detector_dead_time = detector.cam.dead_time.get()
     yield from configure_vector(
         vector,
