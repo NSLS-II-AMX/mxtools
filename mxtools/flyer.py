@@ -248,6 +248,7 @@ def actual_scan(
     # file_prefix = "abc"
     # data_directory_name = "def"
     yield from bps.mv(detector.file.external_name, file_prefix)
+    detector_dead_time = detector_single.cam.dead_time.get()
     yield from configure_flyer(
         vector,
         zebra,
@@ -260,6 +261,16 @@ def actual_scan(
         data_directory_name,
         1,
     )
+    yield from configure_zebra(
+        zebra,
+        angle_start,
+        exposurePeriodPerImage,
+        detector_dead_time,
+        scanWidth,
+        imgWidth,
+        numImages
+    }
+
     yield from bp.fly([mx_flyer])
 
 
