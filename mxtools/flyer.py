@@ -170,7 +170,6 @@ class MXFlyer:
 
 def configure_flyer(
     vector,
-    zebra,
     detector_single,
     angle_start,
     scanWidth,
@@ -251,7 +250,6 @@ def actual_scan(
     detector_dead_time = detector_single.cam.dead_time.get()
     yield from configure_flyer(
         vector,
-        zebra,
         detector,
         angle_start,
         scanWidth,
