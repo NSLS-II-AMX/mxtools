@@ -14,11 +14,11 @@ DEFAULT_DATUM_DICT = {"data": None, "omega": None}
 
 
 class MXFlyer:
-    def __init__(self, vector, zebra, eiger=None) -> None:
+    def __init__(self, vector, zebra, detector=None) -> None:
         self.name = "MXFlyer"
         self.vector = vector
         self.zebra = zebra
-        self.detector = eiger
+        self.detector = detector
 
         self._asset_docs_cache = deque()
         self._resource_uids = []
@@ -145,7 +145,7 @@ class MXFlyer:
         #     ...: ...,
         # }
 
-        # event = {...: ..., "data": {"eiger_img": "a", "omega": "b"}}
+        # event = {...: ..., "data": {"detector_img": "a", "omega": "b"}}
 
         for data_key in self._datum_ids.keys():
             datum_id = f"{resource_uid}/{data_key}"
@@ -171,7 +171,7 @@ class MXFlyer:
 def configure_flyer(
     vector,
     zebra,
-    eiger_single,
+    detector_single,
     angle_start,
     scanWidth,
     imgWidth,
@@ -183,7 +183,7 @@ def configure_flyer(
     changeState=True,
 ):  # scan encoder 0=x, 1=y,2=z,3=omega
 
-    eiger_single.file.write_path_template = data_directory_name
+    detector_single.file.write_path_template = data_directory_name
 
     yield from bps.mv(vector.sync, 1)
     yield from bps.mv(vector.expose, 1)
@@ -200,7 +200,7 @@ def configure_flyer(
     else:
         yield from bps.mv(vector.buffer_time, 3)
         pass
-    detector_dead_time = eiger_single.cam.dead_time.get()
+    detector_dead_time = detector_single.cam.dead_time.get()
     yield from setup_vector_program(
         vector=vector,
         num_images=numImages,
@@ -233,7 +233,7 @@ def configure_nyx_flyer():
 
 def actual_scan(
     mx_flyer,
-    eiger,
+    detector,
     vector,
     zebra,
     angle_start,
@@ -245,11 +245,11 @@ def actual_scan(
 ):
     # file_prefix = "abc"
     # data_directory_name = "def"
-    yield from bps.mv(eiger.file.external_name, file_prefix)
+    yield from bps.mv(detector.file.external_name, file_prefix)
     yield from configure_flyer(
         vector,
         zebra,
-        eiger,
+        detector,
         angle_start,
         scanWidth,
         imgWidth,
@@ -261,4 +261,4 @@ def actual_scan(
     yield from bp.fly([mx_flyer])
 
 
-# vector, zebra, eiger_single are assumed to be in the namespace already
+# vector, zebra, detector_single are assumed to be in the namespace already
