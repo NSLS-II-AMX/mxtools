@@ -170,19 +170,15 @@ class MXFlyer:
 
 def configure_flyer(
     vector,
-    detector_single,
     angle_start,
     scanWidth,
     imgWidth,
     exposurePeriodPerImage,
     filePrefix,
-    data_directory_name,
     file_number_start,
     scanEncoder=3,
     changeState=True,
 ):  # scan encoder 0=x, 1=y,2=z,3=omega
-
-    detector_single.file.write_path_template = data_directory_name
 
     yield from bps.mv(vector.sync, 1)
     yield from bps.mv(vector.expose, 1)
@@ -247,16 +243,15 @@ def actual_scan(
     # file_prefix = "abc"
     # data_directory_name = "def"
     yield from bps.mv(detector.file.external_name, file_prefix)
+    detector_single.file.write_path_template = data_directory_name
     detector_dead_time = detector_single.cam.dead_time.get()
     yield from configure_flyer(
         vector,
-        detector,
         angle_start,
         scanWidth,
         imgWidth,
         exposurePeriodPerImage,
         file_prefix,
-        data_directory_name,
         1,
     )
     yield from configure_zebra(
