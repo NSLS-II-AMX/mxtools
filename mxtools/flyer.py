@@ -183,7 +183,6 @@ def configure_vector(
     scanWidth,
     imgWidth,
     exposurePeriodPerImage,
-    filePrefix,
     file_number_start,
     scanEncoder=3,
     changeState=True,
@@ -264,7 +263,6 @@ def actual_scan(
         scanWidth,
         imgWidth,
         exposurePeriodPerImage,
-        file_prefix,
         1,
     )
     yield from configure_zebra(
