@@ -35,9 +35,15 @@ class MXFlyer:
     def describe_configuration(self):
         return {}
 
-    def kickoff(self):
-        self.detector.stage()
-        self.vector.go.put(1)
+    def prepare(self, **kwargs): # TODO pass a collection object or parameters here
+        self.detector.prepare(**kwargs) # TODO does this replace stage?
+        self.vector.prepare(**kwargs)
+        self.zebra.prepare(**kwargs)
+
+    def kickoff(self): # TODO assumes that vector needs to be set last - true with our systems
+        self.detector.kickoff()
+        self.zebra.kickoff()
+        self.vector.kickoff()
 
         return NullStatus()
 
