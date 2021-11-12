@@ -208,6 +208,8 @@ def configure_flyer(
         angle_end=angle_end,
         exposure_period_per_image=exposurePeriodPerImage,
     )
+
+def configure_zebra(zebra, angle_start, exposurePeriodPerImage, detector_dead_time, scanWidth, imgWidth, numImages)
     yield from zebra_daq_prep(zebra)
     yield from bps.sleep(1.0)
 
