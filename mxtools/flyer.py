@@ -242,9 +242,10 @@ def actual_scan(
 ):
     # file_prefix = "abc"
     # data_directory_name = "def"
+
     yield from bps.mv(detector.file.external_name, file_prefix)
-    detector_single.file.write_path_template = data_directory_name
-    detector_dead_time = detector_single.cam.dead_time.get()
+    detector.file.write_path_template = data_directory_name
+    detector_dead_time = detector.cam.dead_time.get()
     yield from configure_vector(
         vector,
         angle_start,
