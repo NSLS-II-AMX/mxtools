@@ -94,63 +94,6 @@ def setup_vector_program(vector, num_images, angle_start, angle_end, exposure_pe
     yield from bps.mv(vector.hold, 0)
 
 
-def setup_eiger_exposure(eiger, exposure_time, exposure_period):
-    yield from bps.mv(eiger.cam.acquire_time(exposure_time))
-    yield from bps.mv(eiger.cam.acquire_period(exposure_period))
-
-
-def setup_eiger_triggers(eiger, mode, num_triggers, exposure_per_image):
-    yield from bps.mv(eiger.cam.trigger_mode, mode)
-    yield from bps.mv(eiger.cam.num_triggers, num_triggers)
-    yield from bps.mv(eiger.cam.trigger_exposure, exposure_per_image)
-
-
-def setup_eiger_arming(
-    eiger,
-    start,
-    width,
-    num_images,
-    exposure_per_image,
-    file_prefix,
-    data_directory_name,
-    file_number_start,
-    x_beam,
-    y_beam,
-    wavelength,
-    det_distance_m,
-):
-    yield from bps.mv(eiger.cam.trigger_mode, EXTERNAL_SERIES)
-
-    yield from bps.mv(eiger.cam.save_files, 1)
-    yield from bps.mv(eiger.cam.file_owner, getpass.getuser())
-    yield from bps.mv(eiger.cam.file_owner_grp, grp.getgrgid(os.getgid())[0])
-    yield from bps.mv(eiger.cam.file_perms, 420)
-    file_prefix_minus_directory = str(file_prefix)
-    file_prefix_minus_directory = file_prefix_minus_directory.split("/")[-1]
-
-    yield from bps.mv(eiger.cam.acquire_time, exposure_per_image)
-    yield from bps.mv(eiger.cam.acquire_period, exposure_per_image)
-    yield from bps.mv(eiger.cam.num_images, num_images)
-    yield from bps.mv(eiger.cam.file_path, data_directory_name)
-    yield from bps.mv(eiger.cam.fw_name_pattern, f"{file_prefix_minus_directory}_$id")
-
-    # TODO: change it back to eiger.cam.sequence_id once the ophyd PR
-    # https://github.com/bluesky/ophyd/pull/1001 is merged/released.
-    yield from bps.mv(eiger.file.sequence_id, file_number_start)
-
-    # originally from detector_set_fileheader
-    yield from bps.mv(eiger.cam.beam_center_x, x_beam)
-    yield from bps.mv(eiger.cam.beam_center_y, y_beam)
-    yield from bps.mv(eiger.cam.omega_incr, width)
-    yield from bps.mv(eiger.cam.omega_start, start)
-    yield from bps.mv(eiger.cam.wavelength, wavelength)
-    yield from bps.mv(eiger.cam.det_distance, det_distance_m)
-
-    start_arm = time.time()
-    yield from bps.mv(eiger.cam.acquire, 1)
-    logger.info(f"arm time = {time.time() - start_arm}")
-
-
 def setup_eiger_stop_acquire_and_wait(eiger):
     yield from bps.mv(eiger.cam.acquire, 0)
     # wait until Acquire_RBV is 0

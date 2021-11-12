@@ -97,6 +97,60 @@ class EigerSingleTriggerV26(SingleTrigger, EigerBaseV26):
         # self.stage_sigs['shutter_mode'] = 1  # 'EPICS PV'
         self.stage_sigs.update({"cam.num_triggers": 1, "cam.compression_algo": "BS LZ4"})
 
+    def setup_exposure(self, **kwargs):
+        exposure_time = kwargs[exposure_time]
+        exposure_period = kwargs[exposure_period]
+        yield from bps.mv(eiger.cam.acquire_time(exposure_time))
+        yield from bps.mv(eiger.cam.acquire_period(exposure_period))
+
+
+    def setup_triggers(self, **kwargs):
+        mode = kwargs['mode']
+        num_triggers = kwargs['num_triggers']
+        exposure_per_image = kwargs['exposure_per_image']
+        yield from bps.mv(self.cam.trigger_mode, mode)
+        yield from bps.mv(self.cam.num_triggers, num_triggers)
+        yield from bps.mv(self.cam.trigger_exposure, exposure_per_image)
+
+    def setup_arm(self, **kwargs):
+        yield from bps.mv(self.cam.trigger_mode, EXTERNAL_SERIES)
+
+        yield from bps.mv(self.cam.save_files, 1)
+        yield from bps.mv(self.cam.file_owner, getpass.getuser())
+        yield from bps.mv(self.cam.file_owner_grp, grp.getgrgid(os.getgid())[0])
+        yield from bps.mv(self.cam.file_perms, 420)
+        file_prefix_minus_directory = str(file_prefix)
+        file_prefix_minus_directory = file_prefix_minus_directory.split("/")[-1]
+
+        yield from bps.mv(self.cam.acquire_time, exposure_per_image)
+        yield from bps.mv(self.cam.acquire_period, exposure_per_image)
+        yield from bps.mv(self.cam.num_images, num_images)
+        yield from bps.mv(self.cam.file_path, data_directory_name)
+        yield from bps.mv(self.cam.fw_name_pattern, f"{file_prefix_minus_directory}_$id")
+
+        # TODO: change it back to eiger.cam.sequence_id once the ophyd PR
+        # https://github.com/bluesky/ophyd/pull/1001 is merged/released.
+        yield from bps.mv(self.file.sequence_id, file_number_start)
+
+        # originally from detector_set_fileheader
+        yield from bps.mv(self.cam.beam_center_x, x_beam)
+        yield from bps.mv(self.cam.beam_center_y, y_beam)
+        yield from bps.mv(self.cam.omega_incr, width)
+        yield from bps.mv(self.cam.omega_start, start)
+        yield from bps.mv(self.cam.wavelength, wavelength)
+        yield from bps.mv(self.cam.det_distance, det_distance_m)
+
+        start_arm = time.time()
+        yield from bps.mv(self.cam.acquire, 1)
+        logger.info(f"arm time = {time.time() - start_arm}")
+
+
+    def prepare(self, *args, **kwargs):
+        self.setup_exposure(**kwargs)
+        self.setup_triggers(**kwargs)
+        self.setup_arm(**kwargs)
+        self.stage(**kwargs)
+
     def stage(self, *args, **kwargs):
         return super().stage(*args, **kwargs)
 
