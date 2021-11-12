@@ -168,7 +168,7 @@ class MXFlyer:
         self.detector.cam.acquire.put(0)
 
 
-def configure_flyer(
+def configure_vector(
     vector,
     angle_start,
     scanWidth,
@@ -245,7 +245,7 @@ def actual_scan(
     yield from bps.mv(detector.file.external_name, file_prefix)
     detector_single.file.write_path_template = data_directory_name
     detector_dead_time = detector_single.cam.dead_time.get()
-    yield from configure_flyer(
+    yield from configure_vector(
         vector,
         angle_start,
         scanWidth,
