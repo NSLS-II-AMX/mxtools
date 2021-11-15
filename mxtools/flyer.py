@@ -167,14 +167,15 @@ class MXFlyer:
         self.detector.unstage()
         self.detector.cam.acquire.put(0)
 
+    def update_parameters(self, *args, **kwargs):
+        self.configure_detector(**kwargs)
 
-def configure_detector(
-    detector,
-    file_prefix,
-    data_directory_name
-):
-    yield from bps.mv(detector.file.external_name, file_prefix)
-    detector.file.write_path_template = data_directory_name
+
+    def configure_detector(self, **kwargs):
+        file_prefix = kwargs['file_prefix']
+        data_directory_name = kwargs['data_directory_name']
+        self.detector.file.external_name.put(file_prefix)
+        self.detector.file.write_path_template = data_directory_name
  
 
 def configure_vector(
