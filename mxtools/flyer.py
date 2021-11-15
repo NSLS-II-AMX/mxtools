@@ -169,6 +169,7 @@ class MXFlyer:
 
     def update_parameters(self, *args, **kwargs):
         self.configure_detector(**kwargs)
+        self.configure_vector(**kwargs)
 
 
     def configure_detector(self, **kwargs):
@@ -176,42 +177,42 @@ class MXFlyer:
         data_directory_name = kwargs['data_directory_name']
         self.detector.file.external_name.put(file_prefix)
         self.detector.file.write_path_template = data_directory_name
- 
 
-def configure_vector(
-    vector,
-    angle_start,
-    scanWidth,
-    imgWidth,
-    exposurePeriodPerImage,
-    file_number_start,
-    scanEncoder=3,
-    changeState=True,
-):  # scan encoder 0=x, 1=y,2=z,3=omega
 
-    yield from bps.mv(vector.sync, 1)
-    yield from bps.mv(vector.expose, 1)
+    def configure_vector(self, *args, **kwargs):
+        angle_start = kwargs['angle_start']
+        scanWidth = kwargs['scanWidth']
+        imgWidth = kwargs['imgWidth']
+        exposurePeriodPerImage = kwargs['exposurePeriodPerImage']
+        file_number_start = kwargs['file_number_start']
+        scanEncoder = kwargs.get('scanEncoder', 3)
+        changeState = kwargs.get('changeState', True)
+        # scan encoder 0=x, 1=y,2=z,3=omega
 
-    if imgWidth == 0:
-        angle_end = angle_start
-        numImages = scanWidth
-    else:
-        angle_end = angle_start + scanWidth
-        numImages = int(round(scanWidth / imgWidth))
-    total_exposure_time = exposurePeriodPerImage * numImages
-    if total_exposure_time < 1.0:
-        yield from bps.mv(vector.buffer_time, 1000)
-    else:
-        yield from bps.mv(vector.buffer_time, 3)
-        pass
-    detector_dead_time = detector_single.cam.dead_time.get()
-    yield from setup_vector_program(
-        vector=vector,
-        num_images=numImages,
-        angle_start=angle_start,
-        angle_end=angle_end,
-        exposure_period_per_image=exposurePeriodPerImage,
-    )
+        vector.sync.put(1)
+        vector.expose.put(1)
+
+        if imgWidth == 0:
+            angle_end = angle_start
+            numImages = scanWidth
+        else:
+            angle_end = angle_start + scanWidth
+            numImages = int(round(scanWidth / imgWidth))
+        total_exposure_time = exposurePeriodPerImage * numImages
+        if total_exposure_time < 1.0:
+            vector.buffer_time.put(1000)
+        else:
+            vector.buffer_time.put(3)
+            pass
+        detector_dead_time = detector_single.cam.dead_time.get()
+        yield from setup_vector_program(
+            vector=vector,
+            num_images=numImages,
+            angle_start=angle_start,
+            angle_end=angle_end,
+            exposure_period_per_image=exposurePeriodPerImage,
+        )
+
 
 def configure_zebra(zebra, angle_start, exposurePeriodPerImage, detector_dead_time, scanWidth, imgWidth, numImages)
     yield from zebra_daq_prep(zebra)
