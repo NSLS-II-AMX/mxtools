@@ -205,8 +205,7 @@ class MXFlyer:
             vector.buffer_time.put(3)
             pass
         detector_dead_time = detector_single.cam.dead_time.get()
-        yield from setup_vector_program(
-            vector=vector,
+        self.setup_vector_program(
             num_images=numImages,
             angle_start=angle_start,
             angle_end=angle_end,
@@ -237,6 +236,14 @@ class MXFlyer:
             num_images=numImages,
             is_still=imgWidth == 0,
         )
+
+
+    def setup_vector_program(num_images, angle_start, angle_end, exposure_period_per_image):
+        self.vector.num_frames.put(num_images)
+        self.vector.start.omega.put(angle_start)
+        self.vector.end.omega.put(angle_end)
+        self.vector.frame_exptime.put(exposure_period_per_image * 1000.0,)
+        self.vector.hold.put(0)
 
 
     def zebra_daq_prep(self):
