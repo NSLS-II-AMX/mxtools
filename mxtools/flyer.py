@@ -227,8 +227,7 @@ class MXFlyer:
         PW = (exposurePeriodPerImage - detector_dead_time) * 1000.0
         PS = (exposurePeriodPerImage) * 1000.0
         GW = scanWidth - (1.0 - (PW / PS)) * (imgWidth / 2.0)
-        yield from setup_zebra_vector_scan(
-            zebra=zebra,
+        self.setup_zebra_vector_scan(
             angle_start=angle_start,
             gate_width=GW,
             scan_width=scanWidth,
@@ -239,6 +238,26 @@ class MXFlyer:
             is_still=imgWidth == 0,
         )
 
+    def setup_zebra_vector_scan(
+        angle_start,
+        gate_width,
+        scan_width,
+        pulse_width,
+        pulse_step,
+        exposure_period_per_image,
+        num_images,
+        is_still=False,
+    ):
+        self.zebra.pc.gate.start.put(angle_start)
+        if is_still is False:
+            self.zebra.pc.gate.width.put(gate_width)
+            self.zebra.pc.gate.step.put(scan_width)
+        self.zebra.pc.gate.num_gates.put(1)
+        self.zebra.pc.pulse.start.put(0)
+        self.zebra.pc.pulse.width.put(pulse_width)
+        self.zebra.pc.pulse.step.put(pulse_step)
+        self.zebra.pc.pulse.delay.put(exposure_period_per_image / 2 * 1000)
+        self.zebra.pc.pulse.max.put(num_images)
 
 def configure_nyx_flyer():
     ...
