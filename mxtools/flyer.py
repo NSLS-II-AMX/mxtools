@@ -214,24 +214,30 @@ class MXFlyer:
         )
 
 
-def configure_zebra(zebra, angle_start, exposurePeriodPerImage, detector_dead_time, scanWidth, imgWidth, numImages)
-    yield from zebra_daq_prep(zebra)
-    yield from bps.sleep(1.0)
+    def configure_zebra(self, *args, **kwargs):
+        angle_start = kwargs['angle_start']
+        exposurePerImage = kwargs['exposurePerImage']
+        detector_dead_time = kwargs['detector_dead_time']
+        scanWidth = kwargs['scanWidth']
+        imgWidth = kwargs['imgWidth']
+        numImages = kwargs['numImages']
+        yield from zebra_daq_prep(zebra)
+        yield from bps.sleep(1.0)
 
-    PW = (exposurePeriodPerImage - detector_dead_time) * 1000.0
-    PS = (exposurePeriodPerImage) * 1000.0
-    GW = scanWidth - (1.0 - (PW / PS)) * (imgWidth / 2.0)
-    yield from setup_zebra_vector_scan(
-        zebra=zebra,
-        angle_start=angle_start,
-        gate_width=GW,
-        scan_width=scanWidth,
-        pulse_width=PW,
-        pulse_step=PS,
-        exposure_period_per_image=exposurePeriodPerImage,
-        num_images=numImages,
-        is_still=imgWidth == 0,
-    )
+        PW = (exposurePeriodPerImage - detector_dead_time) * 1000.0
+        PS = (exposurePeriodPerImage) * 1000.0
+        GW = scanWidth - (1.0 - (PW / PS)) * (imgWidth / 2.0)
+        yield from setup_zebra_vector_scan(
+            zebra=zebra,
+            angle_start=angle_start,
+            gate_width=GW,
+            scan_width=scanWidth,
+            pulse_width=PW,
+            pulse_step=PS,
+            exposure_period_per_image=exposurePeriodPerImage,
+            num_images=numImages,
+            is_still=imgWidth == 0,
+        )
 
 
 def configure_nyx_flyer():
