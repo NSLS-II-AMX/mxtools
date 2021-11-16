@@ -168,6 +168,7 @@ class MXFlyer:
     def update_parameters(self, *args, **kwargs):
         self.configure_detector(**kwargs)
         self.configure_vector(**kwargs)
+        self.configure_zebra(**kwargs)
 
 
     def configure_detector(self, **kwargs):
