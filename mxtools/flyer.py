@@ -237,11 +237,11 @@ class MXFlyer:
         )
 
 
-    def setup_vector_program(num_images, angle_start, angle_end, exposure_period_per_image):
+    def setup_vector_program(self, num_images, angle_start, angle_end, exposure_period_per_image):
         self.vector.num_frames.put(num_images)
         self.vector.start.omega.put(angle_start)
         self.vector.end.omega.put(angle_end)
-        self.vector.frame_exptime.put(exposure_period_per_image * 1000.0,)
+        self.vector.frame_exptime.put(exposure_period_per_image * 1000.0)
         self.vector.hold.put(0)
 
 
@@ -256,6 +256,7 @@ class MXFlyer:
 
 
     def setup_zebra_vector_scan(
+        self,
         angle_start,
         gate_width,
         scan_width,
