@@ -8,8 +8,6 @@ from bluesky import plans as bp
 from ophyd.sim import NullStatus
 from ophyd.status import SubscriptionStatus
 
-from .scans import setup_vector_program, setup_zebra_vector_scan, zebra_daq_prep
-
 DEFAULT_DATUM_DICT = {"data": None, "omega": None}
 
 
