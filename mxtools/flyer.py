@@ -221,8 +221,8 @@ class MXFlyer:
         scanWidth = kwargs['scanWidth']
         imgWidth = kwargs['imgWidth']
         numImages = kwargs['numImages']
-        yield from zebra_daq_prep(zebra)
-        yield from bps.sleep(1.0)
+        self.zebra_daq_prep()
+        ttime.sleep(1.0)
 
         PW = (exposurePeriodPerImage - detector_dead_time) * 1000.0
         PS = (exposurePeriodPerImage) * 1000.0
@@ -237,6 +237,17 @@ class MXFlyer:
             num_images=numImages,
             is_still=imgWidth == 0,
         )
+
+
+    def zebra_daq_prep(self):
+        self.zebra.reset.put(1)
+        ttime.sleep(2.0)
+        self.zebra.out1.put(31)
+        self.zebra.m1_set_pos.put(1)
+        self.zebra.m2_set_pos.put(1)
+        self.zebra.m3_set_pos.put(1)
+        self.zebra.pc.arm.trig_source.put(1)
+
 
     def setup_zebra_vector_scan(
         angle_start,
