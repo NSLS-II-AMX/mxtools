@@ -1,13 +1,13 @@
 import os
 import time as ttime
 from collections import deque
-
+import getpass
+import grp
 import h5py
-from bluesky import plan_stubs as bps
-from bluesky import plans as bp
 from ophyd.sim import NullStatus
 from ophyd.status import SubscriptionStatus
-
+import logging
+logger = logging.getLogger(__name__)
 DEFAULT_DATUM_DICT = {"data": None, "omega": None}
 
 
@@ -171,22 +171,17 @@ class MXFlyer:
         self.configure_vector(**kwargs)
         self.configure_zebra(**kwargs)
 
-
     def configure_detector(self, **kwargs):
         file_prefix = kwargs['file_prefix']
         data_directory_name = kwargs['data_directory_name']
         self.detector.file.external_name.put(file_prefix)
         self.detector.file.write_path_template = data_directory_name
 
-
     def configure_vector(self, *args, **kwargs):
         angle_start = kwargs['angle_start']
         scanWidth = kwargs['scanWidth']
         imgWidth = kwargs['imgWidth']
         exposurePeriodPerImage = kwargs['exposurePeriodPerImage']
-        file_number_start = kwargs['file_number_start']
-        scanEncoder = kwargs.get('scanEncoder', 3)
-        changeState = kwargs.get('changeState', True)
         # scan encoder 0=x, 1=y,2=z,3=omega
 
         self.vector.sync.put(1)
@@ -204,7 +199,6 @@ class MXFlyer:
         else:
             self.vector.buffer_time.put(3)
             pass
-        detector_dead_time = self.detector.cam.dead_time.get()
         self.setup_vector_program(
             num_images=numImages,
             angle_start=angle_start,
@@ -212,10 +206,9 @@ class MXFlyer:
             exposure_period_per_image=exposurePeriodPerImage,
         )
 
-
     def configure_zebra(self, *args, **kwargs):
         angle_start = kwargs['angle_start']
-        exposurePerImage = kwargs['exposurePerImage']
+        exposurePeriodPerImage = kwargs['exposurePeriodPerImage']
         detector_dead_time = kwargs['detector_dead_time']
         scanWidth = kwargs['scanWidth']
         imgWidth = kwargs['imgWidth']
@@ -275,10 +268,9 @@ class MXFlyer:
         self.detector.cam.wavelength.put(wavelength)
         self.detector.cam.det_distance.put(det_distance_m)
 
-        start_arm = time.time()
+        start_arm = ttime.time()
         self.detector.cam.acquire.put(1)
-        logger.info(f"arm time = {time.time() - start_arm}")
-
+        logger.info(f"arm time = {ttime.time() - start_arm}")
 
     def setup_vector_program(self, num_images, angle_start, angle_end, exposure_period_per_image):
         self.vector.num_frames.put(num_images)
@@ -286,7 +278,6 @@ class MXFlyer:
         self.vector.end.omega.put(angle_end)
         self.vector.frame_exptime.put(exposure_period_per_image * 1000.0)
         self.vector.hold.put(0)
-
 
     def zebra_daq_prep(self):
         self.zebra.reset.put(1)
@@ -296,7 +287,6 @@ class MXFlyer:
         self.zebra.m2_set_pos.put(1)
         self.zebra.m3_set_pos.put(1)
         self.zebra.pc.arm.trig_source.put(1)
-
 
     def setup_zebra_vector_scan(
         self,
