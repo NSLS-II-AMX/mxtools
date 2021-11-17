@@ -1,12 +1,6 @@
-import getpass
-import grp
 import logging
-import os
-import time
 
 import bluesky.plan_stubs as bps
-
-from mxtools.eiger import EXTERNAL_SERIES
 
 logger = logging.getLogger(__name__)
 
