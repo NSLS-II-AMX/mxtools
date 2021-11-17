@@ -1,12 +1,14 @@
+import getpass
+import grp
+import logging
 import os
 import time as ttime
 from collections import deque
-import getpass
-import grp
+
 import h5py
 from ophyd.sim import NullStatus
 from ophyd.status import SubscriptionStatus
-import logging
+
 logger = logging.getLogger(__name__)
 DEFAULT_DATUM_DICT = {"data": None, "omega": None}
 
