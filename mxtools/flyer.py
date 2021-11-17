@@ -7,6 +7,7 @@ from bluesky import plan_stubs as bps
 from bluesky import plans as bp
 from ophyd.sim import NullStatus
 from ophyd.status import SubscriptionStatus
+from .eiger import EXTERNAL_SERIES
 
 DEFAULT_DATUM_DICT = {"data": None, "omega": None}
 
@@ -166,6 +167,7 @@ class MXFlyer:
         self.detector.cam.acquire.put(0)
 
     def update_parameters(self, *args, **kwargs):
+        self.detector_arm(**kwargs)
         self.configure_detector(**kwargs)
         self.configure_vector(**kwargs)
         self.configure_zebra(**kwargs)
@@ -235,6 +237,50 @@ class MXFlyer:
             num_images=numImages,
             is_still=imgWidth == 0,
         )
+
+    def detector_arm(self, **kwargs):
+        start = kwargs['start']
+        width = kwargs['width']
+        num_images = kwargs['num_images']
+        exposure_per_image = kwargs['exposure_per_image']
+        file_prefix = kwargs['file_prefix']
+        data_directory_name = kwargs['data_directory_name']
+        file_number_start = kwargs['file_number_start']
+        x_beam = kwargs['x_beam']
+        y_beam = kwargs['y_beam']
+        wavelength = kwargs['wavelength']
+        det_distance_m = kwargs['det_distance_m']
+
+        self.detector.cam.trigger_mode.put(EXTERNAL_SERIES)
+
+        self.detector.cam.save_files.put(1)
+        self.detector.cam.file_owner.put(getpass.getuser())
+        self.detector.cam.file_owner_grp.put(grp.getgrgid(os.getgid())[0])
+        self.detector.cam.file_perms.put(420)
+        file_prefix_minus_directory = str(file_prefix)
+        file_prefix_minus_directory = file_prefix_minus_directory.split("/")[-1]
+
+        self.detector.cam.acquire_time.put(exposure_per_image)
+        self.detector.cam.acquire_period.put(exposure_per_image)
+        self.detector.cam.num_images.put(num_images)
+        self.detector.cam.file_path.put(data_directory_name)
+        self.detector.cam.fw_name_pattern.put(f"{file_prefix_minus_directory}_$id")
+
+        # TODO: change it back to detector.cam.sequence_id once the ophyd PR
+        # https://github.com/bluesky/ophyd/pull/1001 is merged/released.
+        self.detector.file.sequence_id.put(file_number_start)
+
+        # originally from detector_set_fileheader
+        self.detector.cam.beam_center_x.put(x_beam)
+        self.detector.cam.beam_center_y.put(y_beam)
+        self.detector.cam.omega_incr.put(width)
+        self.detector.cam.omega_start.put(start)
+        self.detector.cam.wavelength.put(wavelength)
+        self.detector.cam.det_distance.put(det_distance_m)
+
+        start_arm = time.time()
+        self.detector.cam.acquire.put(1)
+        logger.info(f"arm time = {time.time() - start_arm}")
 
 
     def setup_vector_program(self, num_images, angle_start, angle_end, exposure_period_per_image):
