@@ -188,8 +188,8 @@ class MXFlyer:
         changeState = kwargs.get('changeState', True)
         # scan encoder 0=x, 1=y,2=z,3=omega
 
-        vector.sync.put(1)
-        vector.expose.put(1)
+        self.vector.sync.put(1)
+        self.vector.expose.put(1)
 
         if imgWidth == 0:
             angle_end = angle_start
@@ -199,9 +199,9 @@ class MXFlyer:
             numImages = int(round(scanWidth / imgWidth))
         total_exposure_time = exposurePeriodPerImage * numImages
         if total_exposure_time < 1.0:
-            vector.buffer_time.put(1000)
+            self.vector.buffer_time.put(1000)
         else:
-            vector.buffer_time.put(3)
+            self.vector.buffer_time.put(3)
             pass
         detector_dead_time = detector_single.cam.dead_time.get()
         self.setup_vector_program(
