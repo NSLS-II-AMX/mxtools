@@ -203,7 +203,7 @@ class MXFlyer:
         else:
             self.vector.buffer_time.put(3)
             pass
-        detector_dead_time = detector_single.cam.dead_time.get()
+        detector_dead_time = self.detector.cam.dead_time.get()
         self.setup_vector_program(
             num_images=numImages,
             angle_start=angle_start,
