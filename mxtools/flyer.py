@@ -7,7 +7,6 @@ from bluesky import plan_stubs as bps
 from bluesky import plans as bp
 from ophyd.sim import NullStatus
 from ophyd.status import SubscriptionStatus
-from .eiger import EXTERNAL_SERIES
 
 DEFAULT_DATUM_DICT = {"data": None, "omega": None}
 
@@ -250,8 +249,6 @@ class MXFlyer:
         y_beam = kwargs['y_beam']
         wavelength = kwargs['wavelength']
         det_distance_m = kwargs['det_distance_m']
-
-        self.detector.cam.trigger_mode.put(EXTERNAL_SERIES)
 
         self.detector.cam.save_files.put(1)
         self.detector.cam.file_owner.put(getpass.getuser())
