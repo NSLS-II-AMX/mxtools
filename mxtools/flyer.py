@@ -174,16 +174,16 @@ class MXFlyer:
         self.configure_zebra(**kwargs)
 
     def configure_detector(self, **kwargs):
-        file_prefix = kwargs['file_prefix']
-        data_directory_name = kwargs['data_directory_name']
+        file_prefix = kwargs["file_prefix"]
+        data_directory_name = kwargs["data_directory_name"]
         self.detector.file.external_name.put(file_prefix)
         self.detector.file.write_path_template = data_directory_name
 
     def configure_vector(self, *args, **kwargs):
-        angle_start = kwargs['angle_start']
-        scanWidth = kwargs['scanWidth']
-        imgWidth = kwargs['imgWidth']
-        exposurePeriodPerImage = kwargs['exposurePeriodPerImage']
+        angle_start = kwargs["angle_start"]
+        scanWidth = kwargs["scanWidth"]
+        imgWidth = kwargs["imgWidth"]
+        exposurePeriodPerImage = kwargs["exposurePeriodPerImage"]
         # scan encoder 0=x, 1=y,2=z,3=omega
 
         self.vector.sync.put(1)
@@ -209,12 +209,12 @@ class MXFlyer:
         )
 
     def configure_zebra(self, *args, **kwargs):
-        angle_start = kwargs['angle_start']
-        exposurePeriodPerImage = kwargs['exposurePeriodPerImage']
-        detector_dead_time = kwargs['detector_dead_time']
-        scanWidth = kwargs['scanWidth']
-        imgWidth = kwargs['imgWidth']
-        numImages = kwargs['numImages']
+        angle_start = kwargs["angle_start"]
+        exposurePeriodPerImage = kwargs["exposurePeriodPerImage"]
+        detector_dead_time = kwargs["detector_dead_time"]
+        scanWidth = kwargs["scanWidth"]
+        imgWidth = kwargs["imgWidth"]
+        numImages = kwargs["numImages"]
         self.zebra_daq_prep()
         ttime.sleep(1.0)
 
@@ -233,17 +233,17 @@ class MXFlyer:
         )
 
     def detector_arm(self, **kwargs):
-        start = kwargs['start']
-        width = kwargs['width']
-        num_images = kwargs['num_images']
-        exposure_per_image = kwargs['exposure_per_image']
-        file_prefix = kwargs['file_prefix']
-        data_directory_name = kwargs['data_directory_name']
-        file_number_start = kwargs['file_number_start']
-        x_beam = kwargs['x_beam']
-        y_beam = kwargs['y_beam']
-        wavelength = kwargs['wavelength']
-        det_distance_m = kwargs['det_distance_m']
+        start = kwargs["start"]
+        width = kwargs["width"]
+        num_images = kwargs["num_images"]
+        exposure_per_image = kwargs["exposure_per_image"]
+        file_prefix = kwargs["file_prefix"]
+        data_directory_name = kwargs["data_directory_name"]
+        file_number_start = kwargs["file_number_start"]
+        x_beam = kwargs["x_beam"]
+        y_beam = kwargs["y_beam"]
+        wavelength = kwargs["wavelength"]
+        det_distance_m = kwargs["det_distance_m"]
 
         self.detector.cam.save_files.put(1)
         self.detector.cam.file_owner.put(getpass.getuser())
