@@ -181,9 +181,9 @@ class MXFlyer:
 
     def configure_vector(self, *args, **kwargs):
         angle_start = kwargs["angle_start"]
-        scanWidth = kwargs["scanWidth"]
-        imgWidth = kwargs["imgWidth"]
-        exposurePeriodPerImage = kwargs["exposurePeriodPerImage"]
+        scanWidth = kwargs["scan_width"]
+        imgWidth = kwargs["img_width"]
+        exposurePeriodPerImage = kwargs["exposure_period_per_image"]
         # scan encoder 0=x, 1=y,2=z,3=omega
 
         self.vector.sync.put(1)
@@ -210,11 +210,11 @@ class MXFlyer:
 
     def configure_zebra(self, *args, **kwargs):
         angle_start = kwargs["angle_start"]
-        exposurePeriodPerImage = kwargs["exposurePeriodPerImage"]
+        exposurePeriodPerImage = kwargs["exposure_period_per_image"]
         detector_dead_time = kwargs["detector_dead_time"]
-        scanWidth = kwargs["scanWidth"]
-        imgWidth = kwargs["imgWidth"]
-        numImages = kwargs["numImages"]
+        scanWidth = kwargs["scan_width"]
+        imgWidth = kwargs["img_width"]
+        numImages = kwargs["num_images"]
         self.zebra_daq_prep()
         ttime.sleep(1.0)
 
@@ -233,10 +233,10 @@ class MXFlyer:
         )
 
     def detector_arm(self, **kwargs):
-        start = kwargs["start"]
-        width = kwargs["width"]
+        start = kwargs["angle_start"]
+        width = kwargs["img_width"]
         num_images = kwargs["num_images"]
-        exposure_per_image = kwargs["exposure_per_image"]
+        exposure_per_image = kwargs["exposure_period_per_image"]
         file_prefix = kwargs["file_prefix"]
         data_directory_name = kwargs["data_directory_name"]
         file_number_start = kwargs["file_number_start"]
