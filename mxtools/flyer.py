@@ -37,7 +37,7 @@ class MXFlyer:
 
     def kickoff(self):
         self.detector.stage()
-        self.vector.go.put(1)
+        self.vector.go.put(1, wait=True)
 
         return NullStatus()
 
@@ -165,7 +165,7 @@ class MXFlyer:
     def unstage(self):
         ttime.sleep(1.0)
         self.detector.unstage()
-        self.detector.cam.acquire.put(0)
+        self.detector.cam.acquire.put(0, wait=True)
 
     def update_parameters(self, *args, **kwargs):
         self.detector_arm(**kwargs)
@@ -176,7 +176,7 @@ class MXFlyer:
     def configure_detector(self, **kwargs):
         file_prefix = kwargs["file_prefix"]
         data_directory_name = kwargs["data_directory_name"]
-        self.detector.file.external_name.put(file_prefix)
+        self.detector.file.external_name.put(file_prefix, wait=True)
         self.detector.file.write_path_template = data_directory_name
 
     def configure_vector(self, *args, **kwargs):
@@ -186,8 +186,8 @@ class MXFlyer:
         exposurePeriodPerImage = kwargs["exposure_period_per_image"]
         # scan encoder 0=x, 1=y,2=z,3=omega
 
-        self.vector.sync.put(1)
-        self.vector.expose.put(1)
+        self.vector.sync.put(1, wait=True)
+        self.vector.expose.put(1, wait=True)
 
         if imgWidth == 0:
             angle_end = angle_start
@@ -197,9 +197,9 @@ class MXFlyer:
             numImages = int(round(scanWidth / imgWidth))
         total_exposure_time = exposurePeriodPerImage * numImages
         if total_exposure_time < 1.0:
-            self.vector.buffer_time.put(1000)
+            self.vector.buffer_time.put(1000, wait=True)
         else:
-            self.vector.buffer_time.put(3)
+            self.vector.buffer_time.put(3, wait=True)
             pass
         self.setup_vector_program(
             num_images=numImages,
@@ -245,50 +245,50 @@ class MXFlyer:
         wavelength = kwargs["wavelength"]
         det_distance_m = kwargs["det_distance_m"]
 
-        self.detector.cam.save_files.put(1)
-        self.detector.cam.file_owner.put(getpass.getuser())
-        self.detector.cam.file_owner_grp.put(grp.getgrgid(os.getgid())[0])
-        self.detector.cam.file_perms.put(420)
+        self.detector.cam.save_files.put(1, wait=True)
+        self.detector.cam.file_owner.put(getpass.getuser(), wait=True)
+        self.detector.cam.file_owner_grp.put(grp.getgrgid(os.getgid())[0], wait=True)
+        self.detector.cam.file_perms.put(420, wait=True)
         file_prefix_minus_directory = str(file_prefix)
         file_prefix_minus_directory = file_prefix_minus_directory.split("/")[-1]
 
-        self.detector.cam.acquire_time.put(exposure_per_image)
-        self.detector.cam.acquire_period.put(exposure_per_image)
-        self.detector.cam.num_images.put(num_images)
-        self.detector.cam.file_path.put(data_directory_name)
-        self.detector.cam.fw_name_pattern.put(f"{file_prefix_minus_directory}_$id")
+        self.detector.cam.acquire_time.put(exposure_per_image, wait=True)
+        self.detector.cam.acquire_period.put(exposure_per_image, wait=True)
+        self.detector.cam.num_images.put(num_images, wait=True)
+        self.detector.cam.file_path.put(data_directory_name, wait=True)
+        self.detector.cam.fw_name_pattern.put(f"{file_prefix_minus_directory}_$id", wait=True)
 
         # TODO: change it back to detector.cam.sequence_id once the ophyd PR
         # https://github.com/bluesky/ophyd/pull/1001 is merged/released.
-        self.detector.file.sequence_id.put(file_number_start)
+        self.detector.file.sequence_id.put(file_number_start, wait=True)
 
         # originally from detector_set_fileheader
-        self.detector.cam.beam_center_x.put(x_beam)
-        self.detector.cam.beam_center_y.put(y_beam)
-        self.detector.cam.omega_incr.put(width)
-        self.detector.cam.omega_start.put(start)
-        self.detector.cam.wavelength.put(wavelength)
-        self.detector.cam.det_distance.put(det_distance_m)
+        self.detector.cam.beam_center_x.put(x_beam, wait=True)
+        self.detector.cam.beam_center_y.put(y_beam, wait=True)
+        self.detector.cam.omega_incr.put(width, wait=True)
+        self.detector.cam.omega_start.put(start, wait=True)
+        self.detector.cam.wavelength.put(wavelength, wait=True)
+        self.detector.cam.det_distance.put(det_distance_m, wait=True)
 
         start_arm = ttime.time()
-        self.detector.cam.acquire.put(1)
+        self.detector.cam.acquire.put(1, wait=True)
         logger.info(f"arm time = {ttime.time() - start_arm}")
 
     def setup_vector_program(self, num_images, angle_start, angle_end, exposure_period_per_image):
-        self.vector.num_frames.put(num_images)
-        self.vector.start.omega.put(angle_start)
-        self.vector.end.omega.put(angle_end)
-        self.vector.frame_exptime.put(exposure_period_per_image * 1000.0)
-        self.vector.hold.put(0)
+        self.vector.num_frames.put(num_images, wait=True)
+        self.vector.start.omega.put(angle_start, wait=True)
+        self.vector.end.omega.put(angle_end, wait=True)
+        self.vector.frame_exptime.put(exposure_period_per_image * 1000.0, wait=True)
+        self.vector.hold.put(0, wait=True)
 
     def zebra_daq_prep(self):
-        self.zebra.reset.put(1)
+        self.zebra.reset.put(1, wait=True)
         ttime.sleep(2.0)
-        self.zebra.out1.put(31)
-        self.zebra.m1_set_pos.put(1)
-        self.zebra.m2_set_pos.put(1)
-        self.zebra.m3_set_pos.put(1)
-        self.zebra.pc.arm.trig_source.put(1)
+        self.zebra.out1.put(31, wait=True)
+        self.zebra.m1_set_pos.put(1, wait=True)
+        self.zebra.m2_set_pos.put(1, wait=True)
+        self.zebra.m3_set_pos.put(1, wait=True)
+        self.zebra.pc.arm.trig_source.put(1, wait=True)
 
     def setup_zebra_vector_scan(
         self,
@@ -301,13 +301,13 @@ class MXFlyer:
         num_images,
         is_still=False,
     ):
-        self.zebra.pc.gate.start.put(angle_start)
+        self.zebra.pc.gate.start.put(angle_start, wait=True)
         if is_still is False:
-            self.zebra.pc.gate.width.put(gate_width)
-            self.zebra.pc.gate.step.put(scan_width)
-        self.zebra.pc.gate.num_gates.put(1)
-        self.zebra.pc.pulse.start.put(0)
-        self.zebra.pc.pulse.width.put(pulse_width)
-        self.zebra.pc.pulse.step.put(pulse_step)
-        self.zebra.pc.pulse.delay.put(exposure_period_per_image / 2 * 1000)
-        self.zebra.pc.pulse.max.put(num_images)
+            self.zebra.pc.gate.width.put(gate_width, wait=True)
+            self.zebra.pc.gate.step.put(scan_width, wait=True)
+        self.zebra.pc.gate.num_gates.put(1, wait=True)
+        self.zebra.pc.pulse.start.put(0, wait=True)
+        self.zebra.pc.pulse.width.put(pulse_width, wait=True)
+        self.zebra.pc.pulse.step.put(pulse_step, wait=True)
+        self.zebra.pc.pulse.delay.put(exposure_period_per_image / 2 * 1000, wait=True)
+        self.zebra.pc.pulse.max.put(num_images, wait=True)
