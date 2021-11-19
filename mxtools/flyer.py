@@ -1,24 +1,24 @@
+import getpass
+import grp
+import logging
 import os
 import time as ttime
 from collections import deque
 
 import h5py
-from bluesky import plan_stubs as bps
-from bluesky import plans as bp
 from ophyd.sim import NullStatus
 from ophyd.status import SubscriptionStatus
 
-from .scans import setup_vector_program, setup_zebra_vector_scan, zebra_daq_prep
-
+logger = logging.getLogger(__name__)
 DEFAULT_DATUM_DICT = {"data": None, "omega": None}
 
 
 class MXFlyer:
-    def __init__(self, vector, zebra, eiger=None) -> None:
+    def __init__(self, vector, zebra, detector=None) -> None:
         self.name = "MXFlyer"
         self.vector = vector
         self.zebra = zebra
-        self.detector = eiger
+        self.detector = detector
 
         self._asset_docs_cache = deque()
         self._resource_uids = []
@@ -145,7 +145,7 @@ class MXFlyer:
         #     ...: ...,
         # }
 
-        # event = {...: ..., "data": {"eiger_img": "a", "omega": "b"}}
+        # event = {...: ..., "data": {"detector_img": "a", "omega": "b"}}
 
         for data_key in self._datum_ids.keys():
             datum_id = f"{resource_uid}/{data_key}"
@@ -167,98 +167,147 @@ class MXFlyer:
         self.detector.unstage()
         self.detector.cam.acquire.put(0)
 
+    def update_parameters(self, *args, **kwargs):
+        self.detector_arm(**kwargs)
+        self.configure_detector(**kwargs)
+        self.configure_vector(**kwargs)
+        self.configure_zebra(**kwargs)
 
-def configure_flyer(
-    vector,
-    zebra,
-    eiger_single,
-    angle_start,
-    scanWidth,
-    imgWidth,
-    exposurePeriodPerImage,
-    filePrefix,
-    data_directory_name,
-    file_number_start,
-    scanEncoder=3,
-    changeState=True,
-):  # scan encoder 0=x, 1=y,2=z,3=omega
+    def configure_detector(self, **kwargs):
+        file_prefix = kwargs["file_prefix"]
+        data_directory_name = kwargs["data_directory_name"]
+        self.detector.file.external_name.put(file_prefix)
+        self.detector.file.write_path_template = data_directory_name
 
-    eiger_single.file.write_path_template = data_directory_name
+    def configure_vector(self, *args, **kwargs):
+        angle_start = kwargs["angle_start"]
+        scanWidth = kwargs["scan_width"]
+        imgWidth = kwargs["img_width"]
+        exposurePeriodPerImage = kwargs["exposure_period_per_image"]
+        # scan encoder 0=x, 1=y,2=z,3=omega
 
-    yield from bps.mv(vector.sync, 1)
-    yield from bps.mv(vector.expose, 1)
+        self.vector.sync.put(1)
+        self.vector.expose.put(1)
 
-    if imgWidth == 0:
-        angle_end = angle_start
-        numImages = scanWidth
-    else:
-        angle_end = angle_start + scanWidth
-        numImages = int(round(scanWidth / imgWidth))
-    total_exposure_time = exposurePeriodPerImage * numImages
-    if total_exposure_time < 1.0:
-        yield from bps.mv(vector.buffer_time, 1000)
-    else:
-        yield from bps.mv(vector.buffer_time, 3)
-        pass
-    detector_dead_time = eiger_single.cam.dead_time.get()
-    yield from setup_vector_program(
-        vector=vector,
-        num_images=numImages,
-        angle_start=angle_start,
-        angle_end=angle_end,
-        exposure_period_per_image=exposurePeriodPerImage,
-    )
-    yield from zebra_daq_prep(zebra)
-    yield from bps.sleep(1.0)
+        if imgWidth == 0:
+            angle_end = angle_start
+            numImages = scanWidth
+        else:
+            angle_end = angle_start + scanWidth
+            numImages = int(round(scanWidth / imgWidth))
+        total_exposure_time = exposurePeriodPerImage * numImages
+        if total_exposure_time < 1.0:
+            self.vector.buffer_time.put(1000)
+        else:
+            self.vector.buffer_time.put(3)
+            pass
+        self.setup_vector_program(
+            num_images=numImages,
+            angle_start=angle_start,
+            angle_end=angle_end,
+            exposure_period_per_image=exposurePeriodPerImage,
+        )
 
-    PW = (exposurePeriodPerImage - detector_dead_time) * 1000.0
-    PS = (exposurePeriodPerImage) * 1000.0
-    GW = scanWidth - (1.0 - (PW / PS)) * (imgWidth / 2.0)
-    yield from setup_zebra_vector_scan(
-        zebra=zebra,
-        angle_start=angle_start,
-        gate_width=GW,
-        scan_width=scanWidth,
-        pulse_width=PW,
-        pulse_step=PS,
-        exposure_period_per_image=exposurePeriodPerImage,
-        num_images=numImages,
-        is_still=imgWidth == 0,
-    )
+    def configure_zebra(self, *args, **kwargs):
+        angle_start = kwargs["angle_start"]
+        exposurePeriodPerImage = kwargs["exposure_period_per_image"]
+        detector_dead_time = kwargs["detector_dead_time"]
+        scanWidth = kwargs["scan_width"]
+        imgWidth = kwargs["img_width"]
+        numImages = kwargs["num_images"]
+        self.zebra_daq_prep()
+        ttime.sleep(1.0)
 
+        PW = (exposurePeriodPerImage - detector_dead_time) * 1000.0
+        PS = (exposurePeriodPerImage) * 1000.0
+        GW = scanWidth - (1.0 - (PW / PS)) * (imgWidth / 2.0)
+        self.setup_zebra_vector_scan(
+            angle_start=angle_start,
+            gate_width=GW,
+            scan_width=scanWidth,
+            pulse_width=PW,
+            pulse_step=PS,
+            exposure_period_per_image=exposurePeriodPerImage,
+            num_images=numImages,
+            is_still=imgWidth == 0,
+        )
 
-def configure_nyx_flyer():
-    ...
+    def detector_arm(self, **kwargs):
+        start = kwargs["angle_start"]
+        width = kwargs["img_width"]
+        num_images = kwargs["num_images"]
+        exposure_per_image = kwargs["exposure_period_per_image"]
+        file_prefix = kwargs["file_prefix"]
+        data_directory_name = kwargs["data_directory_name"]
+        file_number_start = kwargs["file_number_start"]
+        x_beam = kwargs["x_beam"]
+        y_beam = kwargs["y_beam"]
+        wavelength = kwargs["wavelength"]
+        det_distance_m = kwargs["det_distance_m"]
 
+        self.detector.cam.save_files.put(1)
+        self.detector.cam.file_owner.put(getpass.getuser())
+        self.detector.cam.file_owner_grp.put(grp.getgrgid(os.getgid())[0])
+        self.detector.cam.file_perms.put(420)
+        file_prefix_minus_directory = str(file_prefix)
+        file_prefix_minus_directory = file_prefix_minus_directory.split("/")[-1]
 
-def actual_scan(
-    mx_flyer,
-    eiger,
-    vector,
-    zebra,
-    angle_start,
-    scanWidth,
-    imgWidth,
-    exposurePeriodPerImage,
-    file_prefix,
-    data_directory_name,
-):
-    # file_prefix = "abc"
-    # data_directory_name = "def"
-    yield from bps.mv(eiger.file.external_name, file_prefix)
-    yield from configure_flyer(
-        vector,
-        zebra,
-        eiger,
+        self.detector.cam.acquire_time.put(exposure_per_image)
+        self.detector.cam.acquire_period.put(exposure_per_image)
+        self.detector.cam.num_images.put(num_images)
+        self.detector.cam.file_path.put(data_directory_name)
+        self.detector.cam.fw_name_pattern.put(f"{file_prefix_minus_directory}_$id")
+
+        # TODO: change it back to detector.cam.sequence_id once the ophyd PR
+        # https://github.com/bluesky/ophyd/pull/1001 is merged/released.
+        self.detector.file.sequence_id.put(file_number_start)
+
+        # originally from detector_set_fileheader
+        self.detector.cam.beam_center_x.put(x_beam)
+        self.detector.cam.beam_center_y.put(y_beam)
+        self.detector.cam.omega_incr.put(width)
+        self.detector.cam.omega_start.put(start)
+        self.detector.cam.wavelength.put(wavelength)
+        self.detector.cam.det_distance.put(det_distance_m)
+
+        start_arm = ttime.time()
+        self.detector.cam.acquire.put(1)
+        logger.info(f"arm time = {ttime.time() - start_arm}")
+
+    def setup_vector_program(self, num_images, angle_start, angle_end, exposure_period_per_image):
+        self.vector.num_frames.put(num_images)
+        self.vector.start.omega.put(angle_start)
+        self.vector.end.omega.put(angle_end)
+        self.vector.frame_exptime.put(exposure_period_per_image * 1000.0)
+        self.vector.hold.put(0)
+
+    def zebra_daq_prep(self):
+        self.zebra.reset.put(1)
+        ttime.sleep(2.0)
+        self.zebra.out1.put(31)
+        self.zebra.m1_set_pos.put(1)
+        self.zebra.m2_set_pos.put(1)
+        self.zebra.m3_set_pos.put(1)
+        self.zebra.pc.arm.trig_source.put(1)
+
+    def setup_zebra_vector_scan(
+        self,
         angle_start,
-        scanWidth,
-        imgWidth,
-        exposurePeriodPerImage,
-        file_prefix,
-        data_directory_name,
-        1,
-    )
-    yield from bp.fly([mx_flyer])
-
-
-# vector, zebra, eiger_single are assumed to be in the namespace already
+        gate_width,
+        scan_width,
+        pulse_width,
+        pulse_step,
+        exposure_period_per_image,
+        num_images,
+        is_still=False,
+    ):
+        self.zebra.pc.gate.start.put(angle_start)
+        if is_still is False:
+            self.zebra.pc.gate.width.put(gate_width)
+            self.zebra.pc.gate.step.put(scan_width)
+        self.zebra.pc.gate.num_gates.put(1)
+        self.zebra.pc.pulse.start.put(0)
+        self.zebra.pc.pulse.width.put(pulse_width)
+        self.zebra.pc.pulse.step.put(pulse_step)
+        self.zebra.pc.pulse.delay.put(exposure_period_per_image / 2 * 1000)
+        self.zebra.pc.pulse.max.put(num_images)
