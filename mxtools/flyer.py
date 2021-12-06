@@ -218,8 +218,8 @@ class MXFlyer:
         self.zebra_daq_prep()
         ttime.sleep(1.0)
 
-        PW = (exposurePeriodPerImage - detector_dead_time) * 1000.0
-        PS = (exposurePeriodPerImage) * 1000.0
+        PW = (exposurePeriodPerImage - detector_dead_time)
+        PS = (exposurePeriodPerImage)
         GW = scanWidth - (1.0 - (PW / PS)) * (imgWidth / 2.0)
         self.setup_zebra_vector_scan(
             angle_start=angle_start,
