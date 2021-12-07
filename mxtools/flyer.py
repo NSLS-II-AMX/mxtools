@@ -290,6 +290,11 @@ class MXFlyer:
         self.zebra.m3_set_pos.put(1)
         self.zebra.pc.arm.trig_source.put(1)
 
+    # expected zebra setup:
+    #     time in ms
+    #     Posn direction: positive
+    #     gate trig source - Position
+    #     pulse trig source - Time
     def setup_zebra_vector_scan(
         self,
         angle_start,
