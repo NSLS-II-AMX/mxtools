@@ -244,6 +244,7 @@ class MXFlyer:
         y_beam = kwargs["y_beam"]
         wavelength = kwargs["wavelength"]
         det_distance_m = kwargs["det_distance_m"]
+        transmission = kwargs["transmission"]
 
         self.detector.cam.save_files.put(1)
         self.detector.cam.file_owner.put(getpass.getuser())
@@ -269,6 +270,7 @@ class MXFlyer:
         self.detector.cam.omega_start.put(start)
         self.detector.cam.wavelength.put(wavelength)
         self.detector.cam.det_distance.put(det_distance_m * 1000)
+        self.detector.cam.filter_transm(transmission)
 
         start_arm = ttime.time()
         self.detector.cam.acquire.put(1)
