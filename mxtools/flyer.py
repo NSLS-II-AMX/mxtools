@@ -273,7 +273,17 @@ class MXFlyer:
         self.detector.cam.filter_transm.put(transmission)
 
         start_arm = ttime.time()
+
+        def armed_callback(value, old_value, **kwargs):
+            if old_value == 0 and value == 1:
+                return True
+            return False
+
+        status = SubscriptionStatus(self.detector.cam.armed, armed_callback, run=False)
+
         self.detector.cam.acquire.put(1)
+
+        status.wait()
         logger.info(f"arm time = {ttime.time() - start_arm}")
 
     def setup_vector_program(self, num_images, angle_start, angle_end, exposure_period_per_image):
