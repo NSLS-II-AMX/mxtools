@@ -259,9 +259,7 @@ class MXFlyer:
         self.detector.cam.file_path.put(data_directory_name)
         self.detector.cam.fw_name_pattern.put(f"{file_prefix_minus_directory}_$id")
 
-        # TODO: change it back to detector.cam.sequence_id once the ophyd PR
-        # https://github.com/bluesky/ophyd/pull/1001 is merged/released.
-        self.detector.file.sequence_id.put(file_number_start)
+        self.detector.cam.sequence_id.put(file_number_start)
 
         # originally from detector_set_fileheader
         self.detector.cam.beam_center_x.put(x_beam)
