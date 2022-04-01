@@ -244,7 +244,6 @@ class MXFlyer:
         y_beam = kwargs["y_beam"]
         wavelength = kwargs["wavelength"]
         det_distance_m = kwargs["det_distance_m"]
-        transmission = kwargs["transmission"]
 
         self.detector.cam.save_files.put(1)
         self.detector.cam.file_owner.put(getpass.getuser())
@@ -259,9 +258,7 @@ class MXFlyer:
         self.detector.cam.file_path.put(data_directory_name)
         self.detector.cam.fw_name_pattern.put(f"{file_prefix_minus_directory}_$id")
 
-        # TODO: change it back to detector.cam.sequence_id once the ophyd PR
-        # https://github.com/bluesky/ophyd/pull/1001 is merged/released.
-        self.detector.file.sequence_id.put(file_number_start)
+        self.detector.cam.sequence_id.put(file_number_start)
 
         # originally from detector_set_fileheader
         self.detector.cam.beam_center_x.put(x_beam)
@@ -270,7 +267,6 @@ class MXFlyer:
         self.detector.cam.omega_start.put(start)
         self.detector.cam.wavelength.put(wavelength)
         self.detector.cam.det_distance.put(det_distance_m)
-        self.detector.cam.filter_transm.put(transmission)
 
         start_arm = ttime.time()
 
