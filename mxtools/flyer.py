@@ -184,6 +184,10 @@ class MXFlyer:
         scanWidth = kwargs["scan_width"]
         imgWidth = kwargs["img_width"]
         exposurePeriodPerImage = kwargs["exposure_period_per_image"]
+        x_um = (kwargs["x_start_um"], kwargs["x_end_um"])
+        y_um = (kwargs["y_start_um"], kwargs["y_end_um"])
+        z_um = (kwargs["z_start_um"], kwargs["z_end_um"])
+
         # scan encoder 0=x, 1=y,2=z,3=omega
 
         self.vector.sync.put(1)
@@ -205,6 +209,9 @@ class MXFlyer:
             num_images=numImages,
             angle_start=angle_start,
             angle_end=angle_end,
+            x_um=x_um,
+            y_um=y_um,
+            z_um=z_um,
             exposure_period_per_image=exposurePeriodPerImage,
         )
 
@@ -282,10 +289,16 @@ class MXFlyer:
         status.wait()
         logger.info(f"arm time = {ttime.time() - start_arm}")
 
-    def setup_vector_program(self, num_images, angle_start, angle_end, exposure_period_per_image):
+    def setup_vector_program(self, num_images, angle_start, angle_end, x_um, y_um, z_um, exposure_period_per_image):
         self.vector.num_frames.put(num_images)
         self.vector.start.omega.put(angle_start)
         self.vector.end.omega.put(angle_end)
+        self.vector.start.x.put(x_um[0])
+        self.vector.end.x.put(x_um[1])
+        self.vector.start.y.put(y_um[0])
+        self.vector.end.y.put(y_um[0])
+        self.vector.start.z.put(z_um[0])
+        self.vector.end.z.put(z_um[0])
         self.vector.frame_exptime.put(exposure_period_per_image * 1000.0)
         self.vector.hold.put(0)
 
