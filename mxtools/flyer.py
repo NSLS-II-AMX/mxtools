@@ -289,7 +289,9 @@ class MXFlyer:
         status.wait()
         logger.info(f"arm time = {ttime.time() - start_arm}")
 
-    def setup_vector_program(self, num_images, angle_start, angle_end, x_um, y_um, z_um, exposure_period_per_image):
+    def setup_vector_program(
+        self, num_images, angle_start, angle_end, x_um, y_um, z_um, exposure_period_per_image
+    ):
         self.vector.num_frames.put(num_images)
         self.vector.start.omega.put(angle_start)
         self.vector.end.omega.put(angle_end)
