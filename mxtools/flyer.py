@@ -44,7 +44,7 @@ class MXFlyer:
     def complete(self):
         def callback_motion(value, old_value, **kwargs):
             print(f"old: {old_value} -> new: {value}")
-            if int(round(old_value)) == 1 and int(round(value)) == 0:
+            if int(old_value) == 1 and int(value) == 0:
                 return True
             else:
                 return False
