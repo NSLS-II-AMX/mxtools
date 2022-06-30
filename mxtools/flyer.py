@@ -178,6 +178,7 @@ class MXFlyer:
         data_directory_name = kwargs["data_directory_name"]
         self.detector.file.external_name.put(file_prefix)
         self.detector.file.write_path_template = data_directory_name
+        self.detector.file.file_write_images_per_file.put(500)
 
     def configure_vector(self, *args, **kwargs):
         angle_start = kwargs["angle_start"]
