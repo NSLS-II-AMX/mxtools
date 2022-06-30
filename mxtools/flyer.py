@@ -263,6 +263,7 @@ class MXFlyer:
         self.detector.cam.acquire_time.put(exposure_per_image)
         self.detector.cam.acquire_period.put(exposure_per_image)
         self.detector.cam.num_images.put(num_images)
+        self.detector.cam.num_triggers.put(1)
         self.detector.cam.file_path.put(data_directory_name)
         self.detector.cam.fw_name_pattern.put(f"{file_prefix_minus_directory}_$id")
 
