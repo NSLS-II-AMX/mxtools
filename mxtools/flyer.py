@@ -298,9 +298,9 @@ class MXFlyer:
         self.vector.start.x.put(x_um[0])
         self.vector.end.x.put(x_um[1])
         self.vector.start.y.put(y_um[0])
-        self.vector.end.y.put(y_um[0])
+        self.vector.end.y.put(y_um[1])
         self.vector.start.z.put(z_um[0])
-        self.vector.end.z.put(z_um[0])
+        self.vector.end.z.put(z_um[1])
         self.vector.frame_exptime.put(exposure_period_per_image * 1000.0)
         self.vector.hold.put(0)
 
