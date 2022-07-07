@@ -277,7 +277,7 @@ class MXFlyer:
         self.detector.cam.omega_incr.put(width)
         self.detector.cam.omega_start.put(start)
         self.detector.cam.wavelength.put(wavelength)
-        self.detector.cam.det_distance.put(det_distance_m / 1000)  # TODO investigate where this is going wrong
+        self.detector.cam.det_distance.put(det_distance_m)
         self.detector.cam.trigger_mode.put(eiger.EXTERNAL_SERIES)
 
         start_arm = ttime.time()
