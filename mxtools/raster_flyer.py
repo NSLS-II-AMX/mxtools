@@ -47,7 +47,7 @@ class MXRasterFlyer(MXFlyer):
     def detector_arm(self, **kwargs):
         start = kwargs["angle_start"]
         width = kwargs["img_width"]
-        num_images = kwargs["num_images"]
+        total_num_images = kwargs["total_num_images"]
         exposure_per_image = kwargs["exposure_period_per_image"]
         file_prefix = kwargs["file_prefix"]
         data_directory_name = kwargs["data_directory_name"]
@@ -66,8 +66,8 @@ class MXRasterFlyer(MXFlyer):
 
         self.detector.cam.acquire_time.put(exposure_per_image)
         self.detector.cam.acquire_period.put(exposure_per_image)
-        self.detector.cam.num_images.put(num_images)
-        self.detector.cam.num_triggers.put(num_images)
+        self.detector.cam.num_images.put(total_num_images)
+        self.detector.cam.num_triggers.put(total_num_images)
         self.detector.cam.file_path.put(data_directory_name)
         self.detector.cam.fw_name_pattern.put(f"{file_prefix_minus_directory}_$id")
 
