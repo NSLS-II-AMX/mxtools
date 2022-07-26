@@ -7,12 +7,10 @@ from types import SimpleNamespace
 
 import h5py
 from ophyd import Component as Cpt
-from ophyd import (Device, EpicsPathSignal, EpicsSignal, ImagePlugin, Signal,
-                   SingleTrigger)
+from ophyd import Device, EpicsPathSignal, EpicsSignal, ImagePlugin, Signal, SingleTrigger
 from ophyd.areadetector import EigerDetector
 from ophyd.areadetector.base import ADComponent, EpicsSignalWithRBV
 from ophyd.areadetector.filestore_mixins import FileStoreBase  # , new_short_uid
-    FileStoreBase  # , new_short_uid
 from ophyd.utils import set_and_wait
 
 from . import print_now
