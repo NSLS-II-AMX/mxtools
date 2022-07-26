@@ -67,14 +67,17 @@ class EigerBaseV26(EigerDetector):
     file = Cpt(
         EigerSimulatedFilePlugin,
         suffix="cam1:",
-        write_path_template="/nsls2/data/nyx/legacy/",
-        root="/nsls2/data/nyx/legacy",
+        write_path_template="",
     )
     image = Cpt(ImagePlugin, "image1:")
 
     # hotfix: shadow non-existant PV
     size_link = None
 
+    def __init__(self, *args, **kwargs):
+        beamline = kwargs.pop("beamline", "fmx")
+        super().__init__(*args, **kwargs)
+        self.file.write_path_template = f"/nsls2/data/{beamline}/legacy"
     def stage(self, *args, **kwargs):
         # before parent
         ret = super().stage(*args, **kwargs)
