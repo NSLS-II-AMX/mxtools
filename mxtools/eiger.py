@@ -78,6 +78,7 @@ class EigerBaseV26(EigerDetector):
         beamline = kwargs.pop("beamline", "fmx")
         super().__init__(*args, **kwargs)
         self.file.write_path_template = f"/nsls2/data/{beamline}/legacy"
+
     def stage(self, *args, **kwargs):
         # before parent
         ret = super().stage(*args, **kwargs)
