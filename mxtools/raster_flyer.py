@@ -1,4 +1,10 @@
+import getpass
+import grp
+import os
+
+from . import eiger
 from .flyer import MXFlyer
+
 
 class MXRasterFlyer(MXFlyer):
     def __init__(self, vector, zebra, detector) -> None:
@@ -81,4 +87,3 @@ class MXRasterFlyer(MXFlyer):
         self.detector.cam.wavelength.put(wavelength)
         self.detector.cam.det_distance.put(det_distance_m)
         self.detector.cam.trigger_mode.put(eiger.EXTERNAL_SERIES)
-
