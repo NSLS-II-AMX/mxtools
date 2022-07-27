@@ -27,7 +27,6 @@ class MXRasterFlyer(MXFlyer):
         data_directory_name = kwargs["data_directory_name"]
         self.detector.file.external_name.put(file_prefix)
         self.detector.file.write_path_template = data_directory_name
-        self.detector.file.file_write_images_per_file.put(kwargs["num_images_per_file"])
 
     # expected zebra setup:
     #     time in ms
@@ -78,7 +77,7 @@ class MXRasterFlyer(MXFlyer):
 
         self.detector.cam.acquire_time.put(exposure_per_image)
         self.detector.cam.acquire_period.put(exposure_per_image)
-        self.detector.cam.num_images.put(total_num_images)
+        self.detector.cam.num_images.put(1)
         self.detector.cam.num_triggers.put(total_num_images)
         self.detector.cam.file_path.put(data_directory_name)
         self.detector.cam.fw_name_pattern.put(f"{file_prefix_minus_directory}_$id")
@@ -93,6 +92,8 @@ class MXRasterFlyer(MXFlyer):
         self.detector.cam.wavelength.put(wavelength)
         self.detector.cam.det_distance.put(det_distance_m)
         self.detector.cam.trigger_mode.put(eiger.EXTERNAL_SERIES)
+
+        self.detector.file.file_write_images_per_file.put(kwargs["num_images_per_file"])
 
         start_arm = ttime.time()
 
