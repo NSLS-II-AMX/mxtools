@@ -1,9 +1,15 @@
 import getpass
 import grp
+import logging
 import os
+import time as ttime
+
+from ophyd.status import SubscriptionStatus
 
 from . import eiger
 from .flyer import MXFlyer
+
+logger = logging.getLogger(__name__)
 
 
 class MXRasterFlyer(MXFlyer):
@@ -87,6 +93,8 @@ class MXRasterFlyer(MXFlyer):
         self.detector.cam.wavelength.put(wavelength)
         self.detector.cam.det_distance.put(det_distance_m)
         self.detector.cam.trigger_mode.put(eiger.EXTERNAL_SERIES)
+
+        start_arm = ttime.time()
 
         def armed_callback(value, old_value, **kwargs):
             if old_value == 0 and value == 1:
