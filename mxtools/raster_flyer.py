@@ -87,3 +87,15 @@ class MXRasterFlyer(MXFlyer):
         self.detector.cam.wavelength.put(wavelength)
         self.detector.cam.det_distance.put(det_distance_m)
         self.detector.cam.trigger_mode.put(eiger.EXTERNAL_SERIES)
+
+        def armed_callback(value, old_value, **kwargs):
+            if old_value == 0 and value == 1:
+                return True
+            return False
+
+        status = SubscriptionStatus(self.detector.cam.armed, armed_callback, run=False)
+
+        self.detector.cam.acquire.put(1)
+
+        status.wait()
+        logger.info(f"arm time = {ttime.time() - start_arm}")
