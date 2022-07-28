@@ -17,8 +17,12 @@ class MXRasterFlyer(MXFlyer):
         self.name = "MXRasterFlyer"
         super().__init__(vector, zebra, detector)
 
+    def kickoff(self):
+        ttime.sleep(0.2)
+        self.vector.go.put(1)
+        return NullStatus()
+
     def update_parameters(self, *args, **kwargs):
-        self.configure_detector(**kwargs)
         self.configure_vector(**kwargs)
         self.configure_zebra(**kwargs)
 
@@ -77,7 +81,6 @@ class MXRasterFlyer(MXFlyer):
 
         self.detector.cam.acquire_time.put(exposure_per_image)
         self.detector.cam.acquire_period.put(exposure_per_image)
-        self.detector.cam.num_images.put(1)
         self.detector.cam.num_triggers.put(total_num_images)
         self.detector.cam.file_path.put(data_directory_name)
         self.detector.cam.fw_name_pattern.put(f"{file_prefix_minus_directory}_$id")
@@ -91,7 +94,7 @@ class MXRasterFlyer(MXFlyer):
         self.detector.cam.omega_start.put(start)
         self.detector.cam.wavelength.put(wavelength)
         self.detector.cam.det_distance.put(det_distance_m)
-        self.detector.cam.trigger_mode.put(eiger.EXTERNAL_SERIES)
+        self.detector.cam.trigger_mode.put(eiger.EXTERNAL_ENABLE)
 
         self.detector.file.file_write_images_per_file.put(kwargs["num_images_per_file"])
 
@@ -108,3 +111,6 @@ class MXRasterFlyer(MXFlyer):
 
         status.wait()
         logger.info(f"arm time = {ttime.time() - start_arm}")
+
+    def unstage(self):
+        super().unstage()
