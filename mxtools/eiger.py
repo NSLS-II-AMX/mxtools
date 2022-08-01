@@ -8,7 +8,6 @@ from ophyd import Device, EpicsPathSignal, EpicsSignal, ImagePlugin, Signal, Sin
 from ophyd.areadetector import EigerDetector
 from ophyd.areadetector.base import ADComponent, EpicsSignalWithRBV
 from ophyd.areadetector.filestore_mixins import FileStoreBase  # , new_short_uid
-from ophyd.utils import set_and_wait
 
 from . import print_now
 
@@ -41,8 +40,8 @@ class EigerSimulatedFilePlugin(Device, FileStoreBase):
         print(f"{print_now()} staging detector {self.name}")
         res_uid = self.external_name.get()
         write_path = datetime.datetime.now().strftime(self.write_path_template)
-        set_and_wait(self.file_path, f"{write_path}/")
-        set_and_wait(self.file_write_name_pattern, "{}_$id".format(res_uid))
+        self.file_path.set(f"{write_path}/")
+        self.file_write_name_pattern.set("{}_$id".format(res_uid))
         super().stage()
         fn = PurePath(self.file_path.get()) / res_uid
         ipf = int(self.file_write_images_per_file.get())  # noqa
@@ -80,11 +79,11 @@ class EigerBaseV26(EigerDetector):
         # before parent
         ret = super().stage(*args, **kwargs)
         # after parent
-        # set_and_wait(self.cam.manual_trigger, 1)
+        # self.cam.manual_trigger.set(1)
         return ret
 
     def unstage(self):
-        # set_and_wait(self.cam.manual_trigger, 0)
+        # self.cam.manual_trigger.set(0)
         super().unstage()
 
 
@@ -101,7 +100,7 @@ class EigerSingleTriggerV26(SingleTrigger, EigerBaseV26):
 
     def trigger(self, *args, **kwargs):
         status = super().trigger(*args, **kwargs)
-        set_and_wait(self.cam.special_trigger_button, 1)
+        self.cam.special_trigger_button.set(1)
         return status
 
     def read(self, *args, streaming=False, **kwargs):
