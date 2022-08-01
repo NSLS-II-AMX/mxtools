@@ -113,5 +113,11 @@ class MXRasterFlyer(MXFlyer):
         status.wait()
         logger.info(f"arm time = {ttime.time() - start_arm}")
 
+    def describe_collect(self):
+        return
+
+    def collect(self):
+        return
+
     def unstage(self):
         super().unstage()
