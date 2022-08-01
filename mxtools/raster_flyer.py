@@ -4,6 +4,7 @@ import logging
 import os
 import time as ttime
 
+from ophyd.sim import NullStatus
 from ophyd.status import SubscriptionStatus
 
 from . import eiger
