@@ -2,6 +2,7 @@ import datetime
 import os
 import time as ttime
 from collections import OrderedDict, deque
+import logging
 from pathlib import PurePath
 from types import SimpleNamespace
 
@@ -14,6 +15,8 @@ from ophyd.areadetector.filestore_mixins import FileStoreBase  # , new_short_uid
 from ophyd.utils import set_and_wait
 
 from . import print_now
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_DATUM_DICT = {"data": None, "omega": None}
 
