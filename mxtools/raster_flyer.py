@@ -121,3 +121,7 @@ class MXRasterFlyer(MXFlyer):
 
     def unstage(self):
         super().unstage()
+
+    def collect_asset_docs(self):  # not to be done here
+        for _ in ():
+            yield _
