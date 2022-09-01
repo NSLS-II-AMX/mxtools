@@ -117,6 +117,8 @@ class MXRasterFlyer(MXFlyer):
         return {"stream_name": {}}
 
     def collect(self):
+        logger.debug('raster_flyer.collect(): going to unstage now')
+        super().unstage()
         yield {"data": {}, "timestamps": {}, "time": 0, "seq_num": 0}
 
     def unstage(self):
