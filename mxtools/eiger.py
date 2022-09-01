@@ -233,6 +233,7 @@ class EigerSingleTriggerV26(SingleTrigger, EigerBaseV26):
     def unstage(self):
         ttime.sleep(1.0)
         self.cam.acquire.put(0)
+        super().unstage()
 
     def stage(self, *args, **kwargs):
         return super().stage(*args, **kwargs)
