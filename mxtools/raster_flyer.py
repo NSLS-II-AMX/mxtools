@@ -19,7 +19,7 @@ class MXRasterFlyer(MXFlyer):
         super().__init__(vector, zebra, detector)
 
     def kickoff(self):
-        ttime.sleep(0.2)
+        # ttime.sleep(0.2)  # TODO see if vector starts ok without this sleep
         self.vector.go.put(1)
         return NullStatus()
 
