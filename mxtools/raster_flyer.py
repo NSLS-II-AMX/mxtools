@@ -114,10 +114,10 @@ class MXRasterFlyer(MXFlyer):
         logger.info(f"arm time = {ttime.time() - start_arm}")
 
     def describe_collect(self):
-        return {'stream_name': {}}
+        return {"stream_name": {}}
 
     def collect(self):
-        yield {'data': {}, 'timestamps': {}, 'time': 0, 'seq_num': 0}
+        yield {"data": {}, "timestamps": {}, "time": 0, "seq_num": 0}
 
     def unstage(self):
         super().unstage()
