@@ -100,7 +100,6 @@ class MXFlyer:
     #         yield item
 
     def collect_asset_docs(self):
-
         asset_docs_cache = []
 
         # Get the Resource which was produced when the detector was staged.

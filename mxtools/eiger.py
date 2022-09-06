@@ -1,8 +1,12 @@
 import datetime
-from collections import OrderedDict
+import logging
+import os
+import time as ttime
+from collections import OrderedDict, deque
 from pathlib import PurePath
 from types import SimpleNamespace
 
+import h5py
 from ophyd import Component as Cpt
 from ophyd import Device, EpicsPathSignal, EpicsSignal, ImagePlugin, Signal, SingleTrigger
 from ophyd.areadetector import EigerDetector
@@ -10,6 +14,10 @@ from ophyd.areadetector.base import ADComponent, EpicsSignalWithRBV
 from ophyd.areadetector.filestore_mixins import FileStoreBase  # , new_short_uid
 
 from . import print_now
+
+logger = logging.getLogger(__name__)
+
+DEFAULT_DATUM_DICT = {"data": None, "omega": None}
 
 # TODO: convert it to Enum class.
 INTERNAL_SERIES = 0
@@ -98,6 +106,134 @@ class EigerSingleTriggerV26(SingleTrigger, EigerBaseV26):
         self.stage_sigs.pop("cam.acquire")  # remove acquire=0
         # self.stage_sigs['shutter_mode'] = 1  # 'EPICS PV'
         self.stage_sigs.update({"cam.compression_algo": "BS LZ4"})  # TODO is this useful? seems too late
+        self._asset_docs_cache = deque()
+        self._resource_uids = []
+        self._datum_counter = None
+        self._datum_ids = DEFAULT_DATUM_DICT
+        self._master_file = None
+        self._master_metadata = []
+
+        self._collection_dictionary = None
+
+    def read_configuration(self):
+        return {}
+
+    def describe_configuration(self):
+        return {}
+
+    def describe_collect(self):
+        return_dict = {}
+        return_dict["primary"] = {
+            f"{self.detector.name}_image": {
+                "source": f"{self.detector.name}_data",
+                "dtype": "array",
+                "shape": [
+                    self.cam.num_images.get(),
+                    self.cam.array_size.array_size_y.get(),
+                    self.cam.array_size.array_size_x.get(),
+                ],
+                "dims": ["images", "row", "column"],
+                "external": "FILESTORE:",
+            },
+            "omega": {
+                "source": f"{self.detector.name}_omega",
+                "dtype": "array",
+                "shape": [self.cam.num_images.get()],
+                "dims": ["images"],
+                "external": "FILESTORE:",
+            },
+        }
+        return return_dict
+
+    def collect(self):
+        self.unstage()
+
+        now = ttime.time()
+        self._master_metadata = self._extract_metadata()
+        data = {f"{self.detector.name}_image": self._datum_ids["data"], "omega": self._datum_ids["omega"]}
+        yield {
+            "data": data,
+            "timestamps": {key: now for key in data},
+            "time": now,
+            "filled": {key: False for key in data},
+        }
+
+    # def collect_asset_docs(self):
+    #     # items = list(self._asset_docs_cache)
+    #     items = list(self.detector.file._asset_docs_cache)
+    #     print(f"{print_now()} items:\n{items}")
+    #     self.detector.file._asset_docs_cache.clear()
+    #     for item in items:
+    #         yield item
+
+    def collect_asset_docs(self):
+        asset_docs_cache = []
+
+        # Get the Resource which was produced when the detector was staged.
+        ((name, resource),) = self.file.collect_asset_docs()
+
+        asset_docs_cache.append(("resource", resource))
+        self._datum_ids = DEFAULT_DATUM_DICT
+        # Generate Datum documents from scratch here, because the detector was
+        # triggered externally by the DeltaTau, never by ophyd.
+        resource_uid = resource["uid"]
+        # num_points = int(math.ceil(self.detector.cam.num_images.get() /
+        #                 self.detector.cam.fw_num_images_per_file.get()))
+
+        # We are currently generating only one datum document for all frames, that's why
+        #   we use the 0th index below.
+        #
+        # Uncomment & update the line below if more datum documents are needed:
+        # for i in range(num_points):
+
+        seq_id = self.cam.sequence_id.get()
+
+        self._master_file = f"{resource['root']}/{resource['resource_path']}_{seq_id}_master.h5"
+        if not os.path.isfile(self._master_file):
+            raise RuntimeError(f"File {self._master_file} does not exist")
+
+        # The pseudocode below is from Tom Caswell explaining the relationship between resource, datum, and events.
+        #
+        # resource = {
+        #     "resource_id": "RES",
+        #     "resource_kwargs": {},  # this goes to __init__
+        #     "spec": "AD-EIGER-MX",
+        #     ...: ...,
+        # }
+        # datum = {
+        #     "datum_id": "a",
+        #     "datum_kwargs": {"data_key": "data"},  # this goes to __call__
+        #     "resource": "RES",
+        #     ...: ...,
+        # }
+        # datum = {
+        #     "datum_id": "b",
+        #     "datum_kwargs": {"data_key": "omega"},
+        #     "resource": "RES",
+        #     ...: ...,
+        # }
+
+        # event = {...: ..., "data": {"detector_img": "a", "omega": "b"}}
+
+        for data_key in self._datum_ids.keys():
+            datum_id = f"{resource_uid}/{data_key}"
+            self._datum_ids[data_key] = datum_id
+            datum = {
+                "resource": resource_uid,
+                "datum_id": datum_id,
+                "datum_kwargs": {"data_key": data_key},
+            }
+            asset_docs_cache.append(("datum", datum))
+        return tuple(asset_docs_cache)
+
+    def _extract_metadata(self, field="omega"):
+        with h5py.File(self._master_file, "r") as hf:
+            return hf.get(f"entry/sample/goniometer/{field}")[()]
+
+    def unstage(self):
+        ttime.sleep(1.0)
+        self.cam.acquire.put(0)
+        super().unstage()
 
     def stage(self, *args, **kwargs):
         return super().stage(*args, **kwargs)
