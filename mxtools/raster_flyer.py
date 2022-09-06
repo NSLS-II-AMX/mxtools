@@ -72,6 +72,7 @@ class MXRasterFlyer(MXFlyer):
         y_beam = kwargs["y_beam"]
         wavelength = kwargs["wavelength"]
         det_distance_m = kwargs["det_distance_m"]
+        num_images_per_file = kwargs["num_images_per_file"]
 
         self.detector.cam.save_files.put(1)
         self.detector.cam.file_owner.put(getpass.getuser())
@@ -97,7 +98,7 @@ class MXRasterFlyer(MXFlyer):
         self.detector.cam.det_distance.put(det_distance_m)
         self.detector.cam.trigger_mode.put(eiger.EXTERNAL_ENABLE)
 
-        self.detector.file.file_write_images_per_file.put(kwargs["num_images_per_file"])
+        self.detector.file.file_write_images_per_file.put(num_images_per_file)
 
         start_arm = ttime.time()
 
