@@ -119,11 +119,10 @@ class MXRasterFlyer(MXFlyer):
 
     def collect(self):
         logger.debug("raster_flyer.collect(): going to unstage now")
-        super().unstage()
         yield {"data": {}, "timestamps": {}, "time": 0, "seq_num": 0}
 
     def unstage(self):
-        super().unstage()
+        pass
 
     def collect_asset_docs(self):  # not to be done here
         for _ in ():
