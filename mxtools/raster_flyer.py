@@ -53,7 +53,7 @@ class MXRasterFlyer(MXFlyer):
         if is_still is False:
             self.zebra.pc.gate.width.put(gate_width)
             self.zebra.pc.gate.step.put(scan_width)
-        self.zebra.pc.gate.num_gates.put(num_images)
+        self.zebra.pc.gate.num_gates.put(1)
         self.zebra.pc.pulse.start.put(0)
         self.zebra.pc.pulse.width.put(pulse_width)
         self.zebra.pc.pulse.step.put(pulse_step)
