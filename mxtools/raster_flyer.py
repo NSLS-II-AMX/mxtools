@@ -53,7 +53,7 @@ class MXRasterFlyer(MXFlyer):
         if is_still is False:
             self.zebra.pc.gate.width.put(gate_width)
             self.zebra.pc.gate.step.put(scan_width)
-        self.zebra.pc.gate.num_gates.put(num_images)
+        self.zebra.pc.gate.num_gates.put(1)
         self.zebra.pc.pulse.start.put(0)
         self.zebra.pc.pulse.width.put(pulse_width)
         self.zebra.pc.pulse.step.put(pulse_step)
@@ -119,11 +119,10 @@ class MXRasterFlyer(MXFlyer):
 
     def collect(self):
         logger.debug("raster_flyer.collect(): going to unstage now")
-        super().unstage()
         yield {"data": {}, "timestamps": {}, "time": 0, "seq_num": 0}
 
     def unstage(self):
-        super().unstage()
+        pass
 
     def collect_asset_docs(self):  # not to be done here
         for _ in ():
