@@ -24,8 +24,13 @@ class MXRasterFlyer(MXFlyer):
         return NullStatus()
 
     def update_parameters(self, *args, **kwargs):
+        row_index = kwargs.get("row_index", 0)
+        num_images = kwargs["num_images"]
+        if row_index > 0:
+            self.configure_zebra(**kwargs)
+        else:
+            self.zebra.pc.pulse.max.put(num_images)
         self.configure_vector(**kwargs)
-        self.configure_zebra(**kwargs)
 
     def configure_detector(self, **kwargs):
         file_prefix = kwargs["file_prefix"]
