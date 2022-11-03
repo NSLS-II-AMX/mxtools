@@ -287,6 +287,9 @@ class EigerSingleTriggerV26(SingleTrigger, EigerBaseV26):
             ret = super().describe(*args, **kwargs)
             return ret
 
+    def super_unstage(self):
+        super().unstage()
+
 
 def set_eiger_defaults(eiger):
     """Choose which attributes to read per-step (read_attrs) or
