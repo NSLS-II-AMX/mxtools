@@ -28,33 +28,13 @@ class MXRasterFlyer(MXFlyer):
         self.configure_vector(**kwargs)
         row_index = kwargs.get("row_index", 0)
         num_images = kwargs["num_images"]
-        print(f'row_index: {row_index}')
         if row_index == 0:
-            print('configuring zebra')
+            print('row 0: fully configuring zebra')
             self.configure_zebra(**kwargs)
         else:
-            angle_start = kwargs["angle_start"]
-            exposurePeriodPerImage = kwargs["exposure_period_per_image"]
-            detector_dead_time = kwargs["detector_dead_time"]
-            scanWidth = kwargs["scan_width"]
-            imgWidth = kwargs["img_width"]
             numImages = kwargs["num_images"]
-
-            PW = (exposurePeriodPerImage - detector_dead_time) * 1000
-            PS = (exposurePeriodPerImage) * 1000
-            GW = scanWidth - (1.0 - (PW / PS)) * (imgWidth / 2.0)
-            self.setup_zebra_vector_scan(
-                angle_start=angle_start,
-                gate_width=GW,
-                scan_width=scanWidth,
-                pulse_width=PW,
-                pulse_step=PS,
-                exposure_period_per_image=exposurePeriodPerImage,
-                num_images=numImages,
-                is_still=imgWidth == 0,
-            )
-            print('just setting pulse max')
-            print(f'num_gates: {self.zebra.pc.gate.num_gates.get()}')
+            logger.info(f'row {row_index}: only setting pulse max')
+            self.zebra.pulse.max.put(numImages)
         logger.info('finished updating parameters')
 
     def configure_detector(self, **kwargs):

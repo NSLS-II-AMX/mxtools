@@ -233,7 +233,7 @@ class MXFlyer:
         self.setup_zebra_vector_scan(
             angle_start=angle_start,
             gate_width=GW,
-            scan_width=scanWidth,
+            scan_width=scanWidth + 0.001,  # JA not sure why, but done in old LSDC
             pulse_width=PW,
             pulse_step=PS,
             exposure_period_per_image=exposurePeriodPerImage,
