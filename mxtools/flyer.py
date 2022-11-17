@@ -186,6 +186,7 @@ class MXFlyer:
         scanWidth = kwargs["scan_width"]
         imgWidth = kwargs["img_width"]
         exposurePeriodPerImage = kwargs["exposure_period_per_image"]
+        protocol = kwargs.get("protocol", "standard")
         x_um = (kwargs["x_start_um"], kwargs["x_end_um"])
         y_um = (kwargs["y_start_um"], kwargs["y_end_um"])
         z_um = (kwargs["z_start_um"], kwargs["z_end_um"])
@@ -202,11 +203,10 @@ class MXFlyer:
             angle_end = angle_start + scanWidth
             numImages = int(round(scanWidth / imgWidth))
         total_exposure_time = exposurePeriodPerImage * numImages
-        if total_exposure_time < 1.0:
+        if total_exposure_time < 1.0 and protocol != "raster":
             self.vector.buffer_time.put(1000)
         else:
             self.vector.buffer_time.put(3)
-            pass
         self.setup_vector_program(
             num_images=numImages,
             angle_start=angle_start,
@@ -233,7 +233,7 @@ class MXFlyer:
         self.setup_zebra_vector_scan(
             angle_start=angle_start,
             gate_width=GW,
-            scan_width=scanWidth,
+            scan_width=scanWidth + 0.001,  # JA not sure why, but done in old LSDC
             pulse_width=PW,
             pulse_step=PS,
             exposure_period_per_image=exposurePeriodPerImage,
