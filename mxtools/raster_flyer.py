@@ -33,7 +33,7 @@ class MXRasterFlyer(MXFlyer):
         else:
             numImages = kwargs["num_images"]
             logger.debug(f"row {row_index}: only setting pulse max")
-            self.zebra.pulse.max.put(numImages)
+            self.zebra.pc.pulse.max.put(numImages)
         logger.debug("finished updating parameters")
 
     def configure_detector(self, **kwargs):
