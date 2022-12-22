@@ -42,6 +42,35 @@ class MXRasterFlyer(MXFlyer):
         self.detector.file.external_name.put(file_prefix)
         self.detector.file.write_path_template = data_directory_name
 
+    def configure_zebra(self, **kwargs):
+        angle_start = kwargs["angle_start"]
+        exposurePeriodPerImage = kwargs["exposure_period_per_image"]
+        detector_dead_time = kwargs["detector_dead_time"]
+        scanWidth = kwargs["scan_width"]
+        imgWidth = kwargs["img_width"]
+        numImages = kwargs["num_images"]
+        self.zebra_daq_prep()
+        self.zebra.pc.encoder.put(3) #encoder 0=x, 1=y,2=z,3=omega
+        ttime.sleep(1.0)
+        self.zebra.pc.direction.put(0)  #direction 0 = positive
+        self.zebra.pc.gate.sel.put(0)
+        self.zebra.pc.pulse.sel.put(1)
+        self.zebra.pc.pulse.start.put(0)
+
+        PW = (exposurePeriodPerImage - detector_dead_time) * 1000
+        PS = (exposurePeriodPerImage) * 1000
+        GW = scanWidth - (1.0 - (PW / PS)) * (imgWidth / 2.0)
+        self.setup_zebra_vector_scan(
+            angle_start=angle_start,
+            gate_width=GW,
+            scan_width=scanWidth + 0.001,  # JA not sure why, but done in old LSDC
+            pulse_width=PW,
+            pulse_step=PS,
+            exposure_period_per_image=exposurePeriodPerImage,
+            num_images=numImages,
+            is_still=imgWidth == 0,
+        )
+
     # expected zebra setup:
     #     time in ms
     #     Posn direction: positive
