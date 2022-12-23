@@ -50,9 +50,9 @@ class MXRasterFlyer(MXFlyer):
         imgWidth = kwargs["img_width"]
         numImages = kwargs["num_images"]
         self.zebra_daq_prep()
-        self.zebra.pc.encoder.put(3) #encoder 0=x, 1=y,2=z,3=omega
+        self.zebra.pc.encoder.put(3)  # encoder 0=x, 1=y,2=z,3=omega
         ttime.sleep(1.0)
-        self.zebra.pc.direction.put(0)  #direction 0 = positive
+        self.zebra.pc.direction.put(0)  # direction 0 = positive
         self.zebra.pc.gate.sel.put(0)
         self.zebra.pc.pulse.sel.put(1)
         self.zebra.pc.pulse.start.put(0)
@@ -98,7 +98,7 @@ class MXRasterFlyer(MXFlyer):
         self.zebra.pc.pulse.delay.put(exposure_period_per_image / 2 * 1000)
         self.zebra.pc.pulse.max.put(num_images)
         self.vector.hold.put(0)  # necessary to prevent problems upon
-                                 # exposure time change
+        # exposure time change
 
     def detector_arm(self, **kwargs):
         start = kwargs["angle_start"]
