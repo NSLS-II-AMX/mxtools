@@ -310,7 +310,7 @@ class MXFlyer:
 
     def zebra_daq_prep(self):
         self.zebra.reset.put(1)
-        ttime.sleep(2.0)
+        ttime.sleep(2.0)  # not known why this sleep is so long (done since LSDC 1)
         self.zebra.out1.put(31)
         self.zebra.m1_set_pos.put(1)
         self.zebra.m2_set_pos.put(1)
