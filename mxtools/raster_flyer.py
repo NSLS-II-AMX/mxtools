@@ -57,7 +57,7 @@ class MXRasterFlyer(MXFlyer):
         self.zebra.pc.pulse.sel.put(1)
         self.zebra.pc.pulse.start.put(0)
 
-        PW = (exposurePeriodPerImage - detector_dead_time) * 1000
+        PW = (exposurePeriodPerImage - 2 * detector_dead_time) * 1000
         PS = (exposurePeriodPerImage) * 1000
         GW = scanWidth - (1.0 - (PW / PS)) * (imgWidth / 2.0)
         self.setup_zebra_vector_scan(
