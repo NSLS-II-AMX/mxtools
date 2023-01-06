@@ -89,17 +89,20 @@ class MXRasterFlyer(MXFlyer):
     ):
         self.zebra.pc.gate.start.put(angle_start, wait=True)
         if is_still is False:
-            logger.debug(f"gate width: {gate_width} gate step: {scan_width}")
+            logger.debug(f"before: gate width: {gate_width} gate step: {scan_width}")
             self.zebra.pc.gate.width.put(gate_width, wait=True)
             self.zebra.pc.gate.step.put(scan_width, wait=True)
         self.zebra.pc.gate.num_gates.put(1, wait=True)
         self.zebra.pc.pulse.start.put(0, wait=True)
-        logger.debug(f"pulse width: {pulse_width}")
+        logger.debug(f"before: pulse width: {pulse_width}")
         self.zebra.pc.pulse.width.put(pulse_width, wait=True)
         self.zebra.pc.pulse.step.put(pulse_step, wait=True)
-        logger.debug(f"pulse delay: {exposure_period_per_image / 2 * 1000}")
+        logger.debug(f"before: pulse delay: {exposure_period_per_image / 2 * 1000}")
         self.zebra.pc.pulse.delay.put(exposure_period_per_image / 2 * 1000, wait=True)
-        logger.debug(f"after setting: gate width: {self.zebra.pc.gate.width.get()} gate step: {self.zebra.pc.gate.step.get()} pulse width: {self.zebra.pc.pulse.width.get()} pulse delay: {self.zebra.pc.pulse.delay.get()}")
+        logger.debug(
+            f"after: gate width: {self.zebra.pc.gate.width.get()} gate step: {self.zebra.pc.gate.step.get()}"
+            f"after: pulse width: {self.zebra.pc.pulse.width.get()} pulse delay: {self.zebra.pc.pulse.delay.get()}"
+        )
         self.zebra.pc.pulse.max.put(num_images, wait=True)
         self.vector.hold.put(0)  # necessary to prevent problems upon
         # exposure time change
