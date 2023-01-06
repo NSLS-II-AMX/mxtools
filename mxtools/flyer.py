@@ -52,6 +52,8 @@ class MXFlyer:
                 return False
 
         motion_status = SubscriptionStatus(self.vector.active, callback_motion, run=False)
+        # as an alternative, consider using self.zebra.download_status as the zebra should
+        # finish after the vector has finished its movement.
         return motion_status
 
     def describe_collect(self):
