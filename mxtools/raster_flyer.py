@@ -57,7 +57,7 @@ class MXRasterFlyer(MXFlyer):
         self.zebra.pc.pulse.sel.put(1)
         self.zebra.pc.pulse.start.put(0)
 
-        PW = (exposurePeriodPerImage - detector_dead_time) * 1000
+        PW = (exposurePeriodPerImage - 2 * detector_dead_time) * 1000
         PS = (exposurePeriodPerImage) * 1000
         GW = scanWidth - (1.0 - (PW / PS)) * (imgWidth / 2.0)
         self.setup_zebra_vector_scan(
@@ -87,16 +87,23 @@ class MXRasterFlyer(MXFlyer):
         num_images,
         is_still=False,
     ):
-        self.zebra.pc.gate.start.put(angle_start)
+        self.zebra.pc.gate.start.put(angle_start, wait=True)
         if is_still is False:
-            self.zebra.pc.gate.width.put(gate_width)
-            self.zebra.pc.gate.step.put(scan_width)
-        self.zebra.pc.gate.num_gates.put(1)
-        self.zebra.pc.pulse.start.put(0)
-        self.zebra.pc.pulse.width.put(pulse_width)
-        self.zebra.pc.pulse.step.put(pulse_step)
-        self.zebra.pc.pulse.delay.put(exposure_period_per_image / 2 * 1000)
-        self.zebra.pc.pulse.max.put(num_images)
+            logger.debug(f"before: gate width: {gate_width} gate step: {scan_width}")
+            self.zebra.pc.gate.width.put(gate_width, wait=True)
+            self.zebra.pc.gate.step.put(scan_width, wait=True)
+        self.zebra.pc.gate.num_gates.put(1, wait=True)
+        self.zebra.pc.pulse.start.put(0, wait=True)
+        logger.debug(f"before: pulse width: {pulse_width}")
+        self.zebra.pc.pulse.width.put(pulse_width, wait=True)
+        self.zebra.pc.pulse.step.put(pulse_step, wait=True)
+        logger.debug(f"before: pulse delay: {exposure_period_per_image / 2 * 1000}")
+        self.zebra.pc.pulse.delay.put(exposure_period_per_image / 2 * 1000, wait=True)
+        logger.debug(
+            f"after: gate width: {self.zebra.pc.gate.width.get()} gate step: {self.zebra.pc.gate.step.get()}"
+            f"after: pulse width: {self.zebra.pc.pulse.width.get()} pulse delay: {self.zebra.pc.pulse.delay.get()}"
+        )
+        self.zebra.pc.pulse.max.put(num_images, wait=True)
         self.vector.hold.put(0)  # necessary to prevent problems upon
         # exposure time change
 
