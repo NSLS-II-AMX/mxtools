@@ -168,7 +168,6 @@ class MXFlyer:
     def unstage(self):
         ttime.sleep(1.0)
         self.detector.unstage()
-        self.detector.cam.acquire.put(0)
 
     def update_parameters(self, *args, **kwargs):
         self.detector_arm(**kwargs)
