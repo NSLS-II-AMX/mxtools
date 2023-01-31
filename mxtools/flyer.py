@@ -336,13 +336,13 @@ class MXFlyer:
         num_images,
         is_still=False,
     ):
-        self.zebra.pc.gate.start.put(angle_start)
+        self.zebra.pc.gate.start.put(angle_start, wait=True)
         if is_still is False:
-            self.zebra.pc.gate.width.put(gate_width)
-            self.zebra.pc.gate.step.put(scan_width)
-        self.zebra.pc.gate.num_gates.put(1)
-        self.zebra.pc.pulse.start.put(0)
-        self.zebra.pc.pulse.width.put(pulse_width)
-        self.zebra.pc.pulse.step.put(pulse_step)
-        self.zebra.pc.pulse.delay.put(exposure_period_per_image / 2 * 1000)
-        self.zebra.pc.pulse.max.put(num_images)
+            self.zebra.pc.gate.width.put(gate_width, wait=True)
+            self.zebra.pc.gate.step.put(scan_width, wait=True)
+        self.zebra.pc.gate.num_gates.put(1, wait=True)
+        self.zebra.pc.pulse.start.put(0, wait=True)
+        self.zebra.pc.pulse.width.put(pulse_width, wait=True)
+        self.zebra.pc.pulse.step.put(pulse_step, wait=True)
+        self.zebra.pc.pulse.delay.put(exposure_period_per_image / 2 * 1000, wait=True)
+        self.zebra.pc.pulse.max.put(num_images, wait=True)
