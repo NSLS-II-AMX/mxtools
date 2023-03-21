@@ -51,7 +51,7 @@ class MXRasterFlyer(MXFlyer):
         numImages = kwargs["num_images"]
         self.zebra_daq_prep()
         self.zebra.pc.encoder.put(3)  # encoder 0=x, 1=y,2=z,3=omega
-        ttime.sleep(1.0)  # used since LSDC 1 - reason unknown
+        ttime.sleep(0.5)  # used since LSDC 1 - reason unknown
         self.zebra.pc.direction.put(0)  # direction 0 = positive
         self.zebra.pc.gate.sel.put(0)
         self.zebra.pc.pulse.sel.put(1)
