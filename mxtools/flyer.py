@@ -170,8 +170,6 @@ class MXFlyer:
         self.detector.unstage()
 
     def update_parameters(self, *args, **kwargs):
-        if self.detector.cam.armed.get() == 1:
-            raise RuntimeError("Detector must be unarmed in order to begin collection.")
         self.configure_detector(**kwargs)
         self.configure_vector(**kwargs)
         self.configure_zebra(**kwargs)
