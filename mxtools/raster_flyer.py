@@ -147,8 +147,6 @@ class MXRasterFlyer(MXFlyer):
 
         self.detector.file.file_write_images_per_file.put(num_images_per_file)
 
-        start_arm = ttime.time()
-
         def armed_callback(value, old_value, **kwargs):
             if old_value == 0 and value == 1:
                 return True
@@ -158,8 +156,7 @@ class MXRasterFlyer(MXFlyer):
 
         self.detector.cam.acquire.put(1)
 
-        status.wait()
-        logger.info(f"arm time = {ttime.time() - start_arm}")
+        return status
 
     def describe_collect(self):
         return {"stream_name": {}}
