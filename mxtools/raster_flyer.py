@@ -130,6 +130,7 @@ class MXRasterFlyer(MXFlyer):
 
         self.detector.cam.acquire_time.put(exposure_per_image)
         self.detector.cam.acquire_period.put(exposure_per_image)
+        self.detector.cam.trigger_mode.put(eiger.EXTERNAL_ENABLE) # Setting trigger mode before num_triggers due to change in Eiger REST API change
         self.detector.cam.num_triggers.put(total_num_images)
         self.detector.cam.file_path.put(data_directory_name)
         self.detector.cam.fw_name_pattern.put(f"{file_prefix_minus_directory}_$id")
@@ -143,9 +144,10 @@ class MXRasterFlyer(MXFlyer):
         self.detector.cam.omega_start.put(start)
         self.detector.cam.wavelength.put(wavelength)
         self.detector.cam.det_distance.put(det_distance_m)
-        self.detector.cam.trigger_mode.put(eiger.EXTERNAL_ENABLE)
 
         self.detector.file.file_write_images_per_file.put(num_images_per_file)
+
+        start_arm = ttime.time()
 
         def armed_callback(value, old_value, **kwargs):
             if old_value == 0 and value == 1:
@@ -156,7 +158,8 @@ class MXRasterFlyer(MXFlyer):
 
         self.detector.cam.acquire.put(1)
 
-        return status
+        status.wait()
+        logger.info(f"arm time = {ttime.time() - start_arm}")
 
     def describe_collect(self):
         return {"stream_name": {}}
