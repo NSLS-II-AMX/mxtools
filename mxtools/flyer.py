@@ -170,9 +170,6 @@ class MXFlyer:
         self.detector.unstage()
 
     def update_parameters(self, *args, **kwargs):
-        if self.detector.cam.armed.get() == 1:
-            raise RuntimeError("Detector must be unarmed in order to begin collection.")
-        self.detector_arm(**kwargs)
         self.configure_detector(**kwargs)
         self.configure_vector(**kwargs)
         self.configure_zebra(**kwargs)
@@ -265,7 +262,8 @@ class MXFlyer:
 
         self.detector.cam.acquire_time.put(exposure_per_image)
         self.detector.cam.acquire_period.put(exposure_per_image)
-        self.detector.cam.trigger_mode.put(eiger.EXTERNAL_SERIES) # Trigger mode set before num_images due to updates in Eiger REST API
+        # Trigger mode set before num_images due to updates in Eiger REST API
+        self.detector.cam.trigger_mode.put(eiger.EXTERNAL_SERIES)
         self.detector.cam.num_images.put(num_images)
         self.detector.cam.num_triggers.put(1)
         self.detector.cam.file_path.put(data_directory_name)
@@ -282,8 +280,6 @@ class MXFlyer:
         self.detector.cam.det_distance.put(det_distance_m)
 
         self.detector.file.file_write_images_per_file.put(500)
-        
-        start_arm = ttime.time()
 
         def armed_callback(value, old_value, **kwargs):
             if old_value == 0 and value == 1:
@@ -294,8 +290,7 @@ class MXFlyer:
 
         self.detector.cam.acquire.put(1)
 
-        status.wait()
-        logger.info(f"arm time = {ttime.time() - start_arm}")
+        return status
 
     def setup_vector_program(
         self, num_images, angle_start, angle_end, x_um, y_um, z_um, exposure_period_per_image
