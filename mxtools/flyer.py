@@ -179,7 +179,6 @@ class MXFlyer:
         data_directory_name = kwargs["data_directory_name"]
         self.detector.file.external_name.put(file_prefix)
         self.detector.file.write_path_template = data_directory_name
-        self.detector.file.file_write_images_per_file.put(500)
 
     def configure_vector(self, *args, **kwargs):
         angle_start = kwargs["angle_start"]
@@ -263,6 +262,8 @@ class MXFlyer:
 
         self.detector.cam.acquire_time.put(exposure_per_image)
         self.detector.cam.acquire_period.put(exposure_per_image)
+        # Trigger mode set before num_images due to updates in Eiger REST API
+        self.detector.cam.trigger_mode.put(eiger.EXTERNAL_SERIES)
         self.detector.cam.num_images.put(num_images)
         self.detector.cam.num_triggers.put(1)
         self.detector.cam.file_path.put(data_directory_name)
@@ -277,7 +278,8 @@ class MXFlyer:
         self.detector.cam.omega_start.put(start)
         self.detector.cam.wavelength.put(wavelength)
         self.detector.cam.det_distance.put(det_distance_m)
-        self.detector.cam.trigger_mode.put(eiger.EXTERNAL_SERIES)
+
+        self.detector.file.file_write_images_per_file.put(500)
 
         def armed_callback(value, old_value, **kwargs):
             if old_value == 0 and value == 1:
